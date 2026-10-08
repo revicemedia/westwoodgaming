@@ -17,13 +17,13 @@ export default function Section({game}: any) {
         </div>
         <div className="px-4 pb-4 flex flex-col gap-2">
             <div className="flex justify-between">
-                <h2 className="text-xs font-extralight border rounded-sm w-fit px-1">{game.category}</h2>
+                <h2 className="text-xs font-extralight border rounded-sm w-fit px-1 text-white border-white">{game.category}</h2>
                 <div className="flex gap-1 items-center justify-center">
                     <div className="rounded-full w-1.5 h-1.5 bg-green-400 animate-pulse"></div>
                     <p className="text-green-400 text-xs">{game.online + " online"}</p>
                 </div>
             </div>
-            <p className="text-lg font-semibold tracking-normal">{game.name}</p>
+            <p className="text-lg font-semibold tracking-normal text-white">{game.name}</p>
         </div>
     </div>
   )
