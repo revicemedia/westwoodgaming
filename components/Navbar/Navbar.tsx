@@ -6,7 +6,7 @@ import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 const navigation = [
-  { name: 'START', href: '#' },
+  { name: 'START', href: '/' },
   { name: 'KONTAKT', href: '/kontakt' },
   { name: 'COMMUNITY', href: '#' },
   { name: 'NEWS', href: '#' },
@@ -20,7 +20,7 @@ export default function Navbar() {
       <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
         <div className="flex lg:flex-1">
           <a href="#" className="-m-1.5 p-1.5">
-            <span className="sr-only">Your Company</span>
+            <span className="sr-only">Westwood Gaming</span>
             <Image
               alt=""
               src="/WG-Logo.jpg"
@@ -71,11 +71,11 @@ export default function Navbar() {
               <span className="sr-only">Your Company</span>
               <Image
                 alt=""
-                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+                src="/WG-Logo.jpg"
                 width={47}
                 height={40}
                 unoptimized
-                className="h-8 w-auto"
+                className="h-12 w-auto"
               />
             </a>
             <button
@@ -100,12 +100,22 @@ export default function Navbar() {
                   </a>
                 ))}
               </div>
-              <div className="py-6">
+              <div className="space-y-2 py-6">
                 <a
-                  href="#"
-                  className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                  href="https://discord.gg/shbJrNYQ6y"
+                  target="_blank"
+                  className="-mx-3 flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                 >
-                  Log in
+                  <Image alt="" src="/Discord-Symbol.svg" width={127} height={96} className="size-6 object-contain" />
+                  Discord
+                </a>
+                <a
+                  href="https://www.twitch.tv/mfgfaith"
+                  target="_blank"
+                  className="-mx-3 flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                >
+                  <Image alt="" src="/twitch-logo.svg" width={24} height={24} className="size-6 object-contain" />
+                  Twitch
                 </a>
               </div>
             </div>
