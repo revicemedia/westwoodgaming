@@ -4,7 +4,7 @@ import type { GameEvent } from '@/lib/events'
 
 export default function EventCard({ event, image, game }: { event: GameEvent; image: string; game: string }) {
   return (
-    <div className="block w-full h-auto rounded-md overflow-hidden bg-black">
+    <div className="block w-full h-full rounded-md overflow-hidden bg-black">
         <div className="relative">
             <Image
               src={image}
