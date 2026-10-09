@@ -3,7 +3,7 @@ const navigation = {
     { name: 'News', href: '#' },
     { name: 'Games', href: '#' },
     { name: 'Community', href: '#' },
-    { name: 'Kontakt', href: '#' },
+    { name: 'Kontakt', href: '/kontakt' },
     { name: 'Impressum', href: '#' },
   ],
   social: [
