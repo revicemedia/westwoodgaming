@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react'
 import { CheckCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
-import { sendContactMessage, type ContactState } from '@/app/kontakt/actions'
+import { sendContactMessage, type ContactState } from '@/app/(frontend)/kontakt/actions'
 
 const categories = ['Allgemeine Anfrage', 'Mitmachen', 'Event', 'Sponsoring', 'Problem melden', 'Sonstiges']
 

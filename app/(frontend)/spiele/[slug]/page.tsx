@@ -4,7 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CheckIcon } from "@heroicons/react/24/outline";
-import { games, getGame } from "@/lib/games";
+import EventCard from "@/components/EventCard/EventCard";
+import { getUpcomingEvents } from "@/lib/events";
+import { games, getGame, type Game } from "@/lib/games";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -115,22 +117,30 @@ async function GameContent({ params }: Props) {
 
           <div>
             <h2 className="mb-4 text-2xl font-semibold text-black">/ Events</h2>
-            {game.events.length > 0 ? (
-              <ul className="flex flex-col gap-4">
-                {game.events.map((event) => (
-                  <li key={event.title} className="rounded-md bg-black p-4">
-                    <p className="w-fit rounded-sm border border-white px-1 text-xs font-extralight text-white">{event.date}</p>
-                    <p className="mt-3 text-lg font-semibold text-white">{event.title}</p>
-                    <p className="mt-1 text-sm/6 text-gray-300">{event.description}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-base/7 text-gray-600">Aktuell sind keine Events geplant.</p>
-            )}
+            <Suspense fallback={null}>
+              <EventList game={game} />
+            </Suspense>
           </div>
         </div>
       </div>
     </>
+  );
+}
+
+async function EventList({ game }: { game: Game }) {
+  const events = await getUpcomingEvents(game.slug);
+
+  if (events.length === 0) {
+    return <p className="text-base/7 text-gray-600">Aktuell sind keine Events geplant.</p>;
+  }
+
+  return (
+    <ul className="flex flex-col gap-6">
+      {events.map((event) => (
+        <li key={event.id}>
+          <EventCard event={event} image={game.image} game={game.name} />
+        </li>
+      ))}
+    </ul>
   );
 }

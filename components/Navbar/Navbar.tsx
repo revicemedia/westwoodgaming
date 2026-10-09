@@ -8,9 +8,9 @@ import Link from 'next/link'
 
 const navigation = [
   { name: 'START', href: '/' },
-  { name: 'KONTAKT', href: '/kontakt' },
-  { name: 'COMMUNITY', href: '#' },
   { name: 'NEWS', href: '#' },
+  { name: 'EVENTS', href: '/events' },
+  { name: 'KONTAKT', href: '/kontakt' },
 ]
 
 export default function Navbar() {

@@ -1,9 +1,3 @@
-export type GameEvent = {
-  title: string
-  date: string
-  description: string
-}
-
 export type Game = {
   slug: string
   name: string
@@ -14,7 +8,6 @@ export type Game = {
   teaser: string
   description: string[]
   highlights: string[]
-  events: GameEvent[]
 }
 
 export const games: Game[] = [
@@ -32,28 +25,20 @@ export const games: Game[] = [
       'Wir spielen ohne Leistungsdruck, aber mit Ehrgeiz. Neue Spieler sind jederzeit willkommen, egal auf welchem Niveau.',
     ],
     highlights: ['Clubs mit festem Community-Team', 'Ultimate Team und Koop-Partien', 'Interne Turniere', 'Voice-Chat im Discord'],
-    events: [
-      { title: 'Clubs-Abend', date: 'Termin folgt', description: 'Gemeinsame Clubs-Runde mit dem Community-Team.' },
-      { title: 'Internes Turnier', date: 'Termin folgt', description: 'Eins gegen eins im K.-o.-Modus, Anmeldung über Discord.' },
-    ],
   },
   {
-    slug: 'gta-v',
-    name: 'GTA V',
+    slug: 'gta-vi',
+    name: 'GTA VI',
     image: '/GTAVI.jpg',
     category: 'Community Game',
-    discordNames: ['grand theft auto v', 'gta v'],
+    discordNames: ['grand theft auto vi', 'gta vi', 'gta 6'],
     online: 6,
-    teaser: 'Heists, Rennen und Chaos in Los Santos – mit der Crew macht die offene Welt erst richtig Spaß.',
+    teaser: 'Heists, Rennen und Chaos in Leonida – mit der Crew macht die offene Welt erst richtig Spaß.',
     description: [
-      'In GTA Online sind wir als Crew unterwegs: Heists planen, Rennen fahren oder einfach gemeinsam durch Los Santos ziehen.',
+      'In GTA VI sind wir als Crew unterwegs: Heists planen, Rennen fahren oder einfach gemeinsam durch Vice City und Leonida ziehen.',
       'Wer mitmachen will, kommt in den Discord und schließt sich der nächsten Session an.',
     ],
     highlights: ['Heists in voller Besetzung', 'Rennen und Stunt-Strecken', 'Gemeinsame Freeroam-Sessions', 'Voice-Chat im Discord'],
-    events: [
-      { title: 'Heist-Abend', date: 'Termin folgt', description: 'Wir spielen die großen Heists gemeinsam durch.' },
-      { title: 'Rennserie', date: 'Termin folgt', description: 'Mehrere Strecken, eine Gesamtwertung.' },
-    ],
   },
   {
     slug: 'battlefield-6',
@@ -68,10 +53,6 @@ export const games: Game[] = [
       'Egal ob Infanterie, Panzer oder Heli – jede Rolle wird gebraucht.',
     ],
     highlights: ['Feste Squads mit Voice', 'Große Schlachten mit Fahrzeugen', 'Gemeinsame Spielabende', 'Einsteiger willkommen'],
-    events: [
-      { title: 'Squad-Abend', date: 'Termin folgt', description: 'Mehrere volle Squads auf einem Server.' },
-      { title: 'Fahrzeug-Training', date: 'Termin folgt', description: 'Panzer, Heli und Jet in Ruhe üben.' },
-    ],
   },
   {
     slug: 'call-of-duty',
@@ -86,10 +67,6 @@ export const games: Game[] = [
       'Schau im Discord vorbei und häng dich an die nächste Lobby.',
     ],
     highlights: ['Multiplayer in voller Lobby', 'Warzone im Squad', 'Zombies-Abende', 'Voice-Chat im Discord'],
-    events: [
-      { title: 'Warzone-Abend', date: 'Termin folgt', description: 'Mehrere Squads, eine gemeinsame Wertung.' },
-      { title: 'Zombies-Nacht', date: 'Termin folgt', description: 'Wie viele Runden schaffen wir zusammen?' },
-    ],
   },
 ]
 
