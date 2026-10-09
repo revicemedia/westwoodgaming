@@ -1,31 +1,5 @@
+import { games } from "@/lib/games"
 import Section from "./Section/Section"
-
-const games = [
-    {
-        name: "EA FC 27",
-        image: "/EAFC.jpg",
-        category: "Community Game",
-        online: 8,
-    },
-    {
-        name: "GTA V",
-        image: "/GTAVI.jpg",
-        category: "Community Game",
-        online: 6,
-    },
-    {
-        name: "Battlefield 6",
-        image: "/BF6.jpg",
-        category: "Community Game",
-        online: 1,
-    },
-    {
-        name: "Call of Duty",
-        image: "/COD.jpg",
-        category: "Community Game",
-        online: 4,
-    }
-]
 
 export default function GameSection() {
   return (

@@ -1,9 +1,10 @@
 import Image from 'next/image'
+import Link from 'next/link'
+import type { Game } from '@/lib/games'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function Section({game}: any) {
+export default function Section({game}: {game: Game}) {
   return (
-    <div className="w-full h-auto rounded-md overflow-hidden bg-black">
+    <Link href={`/spiele/${game.slug}`} className="block w-full h-auto rounded-md overflow-hidden bg-black transition-all hover:opacity-90">
         <div className="relative">
             <Image
               src={game.image}
@@ -25,6 +26,6 @@ export default function Section({game}: any) {
             </div>
             <p className="text-lg font-semibold tracking-normal text-white">{game.name}</p>
         </div>
-    </div>
+    </Link>
   )
 }

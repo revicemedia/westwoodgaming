@@ -23,11 +23,11 @@ export default function Navbar() {
             <span className="sr-only">Your Company</span>
             <Image
               alt=""
-              src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+              src="/WG-Logo.jpg"
               width={47}
               height={40}
               unoptimized
-              className="h-8 w-auto"
+              className="h-12 w-auto"
             />
           </a>
         </div>
@@ -59,7 +59,7 @@ export default function Navbar() {
             <span className="pointer-events-none absolute top-full left-1/2 z-10 mt-2 -translate-x-1/2 rounded-sm bg-gray-900 px-2 py-1 text-xs font-semibold whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
               Twitch
             </span>
-            <Image alt="" src="/twitch-logo.svg" width={24} height={28} className='size-6 object-contain transition-opacity group-hover:opacity-70'/>
+            <Image alt="" src="/twitch-logo.svg" width={24} height={24} className='size-6 object-contain transition-opacity group-hover:opacity-70'/>
           </a>
         </div>
       </nav>
