@@ -15,6 +15,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.10",
     "@heroicons/react": "^2.2.0",
+    "@libsql/client": "^0.18.0",
     "@payloadcms/db-sqlite": "^3.90.2",
     "@payloadcms/next": "^3.90.2",
     "@payloadcms/translations": "^3.90.2",

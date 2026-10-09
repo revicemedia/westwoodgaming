@@ -22,7 +22,7 @@ const isPast = (event: GameEvent, now: number) =>
 export async function getUpcomingEvents(game?: string) {
   await connection()
   const now = Date.now()
-  const events = await getEvents()
+  const events = await loadEvents()
 
   return events.filter((event) => (!game || event.game === game) && !isPast(event, now))
 }
@@ -31,9 +31,19 @@ export async function getUpcomingEvents(game?: string) {
 export async function getPastEvents() {
   await connection()
   const now = Date.now()
-  const events = await getEvents()
+  const events = await loadEvents()
 
   return events.filter((event) => isPast(event, now)).reverse()
+}
+
+// Ist die Datenbank nicht erreichbar, bleibt die Seite ohne Events benutzbar
+async function loadEvents() {
+  try {
+    return await getEvents()
+  } catch (cause) {
+    console.error('Events konnten nicht geladen werden.', cause)
+    return []
+  }
 }
 
 async function getEvents(): Promise<GameEvent[]> {

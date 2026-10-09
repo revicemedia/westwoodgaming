@@ -6,6 +6,7 @@ import { buildConfig } from 'payload'
 
 import { Events } from './collections/Events'
 import { Users } from './collections/Users'
+import { migrations } from './migrations'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -30,11 +31,14 @@ export default buildConfig({
   },
   db: sqliteAdapter({
     client: {
-      url: process.env.DATABASE_URL || '',
-      authToken: process.env.DATABASE_AUTH_TOKEN,
+      // TURSO_* setzt die Turso-Integration von Vercel automatisch
+      url: process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL || '',
+      authToken: process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN,
     },
     migrationDir: path.resolve(dirname, 'migrations'),
     // Schema-Änderungen laufen ausschließlich über Migrationen
     push: false,
+    // In Produktion spielt Payload offene Migrationen beim Start selbst ein
+    prodMigrations: migrations,
   }),
 })
