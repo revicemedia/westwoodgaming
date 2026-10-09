@@ -38,7 +38,7 @@ export default function KontaktPage() {
             <p className="max-w-3xl text-base/7 text-gray-600">
               Du hast eine Frage, möchtest mitmachen oder ein Problem melden? Schreib uns – deine Nachricht landet
               direkt bei unseren Admins. Du kannst dich alternativ auch direkt via {" "}
-              <a href="https://discord.gg/shbJrNYQ6y" target="_blank" className="font-semibold text-black underline">
+              <a href="https://discord.gg/shbJrNYQ6y" target="_blank" className="font-semibold text-black">
                 Discord 
               </a>
                {" "}bei uns melden.
