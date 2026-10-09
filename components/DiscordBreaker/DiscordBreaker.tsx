@@ -12,13 +12,13 @@ export default function DiscordBreaker() {
         <div className="relative isolate overflow-hidden bg-black px-6 py-24 text-center shadow-2xl sm:rounded-md sm:px-16">
           <div className="flex h-7 items-center justify-center">
             {status && (
-              <p className="flex items-center gap-2 rounded-sm border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white">
+              <p className="flex items-center gap-2 rounded-sm border border-white/20 bg-white/10 px-3 py-1 text-xs font-normal text-white">
                 <span className="size-1.5 animate-pulse rounded-full bg-green-400 motion-reduce:animate-none"></span>
                 {status.online} Mitglieder sind gerade online
               </p>
             )}
           </div>
-          <h2 className="mt-6 text-balance text-4xl font-semibold text-white sm:text-5xl">
+          <h2 className="mt-6 text-balance text-3xl font-semibold text-white">
             Dein Weg zu uns
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-pretty text-lg/8 text-gray-300">

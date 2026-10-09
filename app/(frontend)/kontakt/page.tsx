@@ -24,7 +24,7 @@ export default function KontaktPage() {
         <div className="mx-auto flex min-h-80 max-w-7xl items-end px-6 pt-24 pb-10 sm:min-h-96 lg:min-h-[min(30vw,55svh)] lg:px-8">
           <div>
             <p className="w-fit rounded-sm border border-white px-1 text-xs font-extralight text-white">Westwood Gaming</p>
-            <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-white uppercase sm:text-5xl lg:text-6xl">
+            <h1 className="mt-4 text-pretty text-3xl font-semibold text-white sm:text-4xl">
               Kontakt
             </h1>
           </div>
@@ -34,7 +34,7 @@ export default function KontaktPage() {
       <div className="w-full bg-white py-20">
         <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
           <div>
-            <h2 className="mb-4 text-2xl font-semibold text-black">/ Kontaktiere uns</h2>
+            <h2 className="mb-4 text-2xl font-semibold text-black">Kontaktiere uns</h2>
             <p className="max-w-3xl text-base/7 text-gray-600">
               Du hast eine Frage, möchtest mitmachen oder ein Problem melden? Schreib uns – deine Nachricht landet
               direkt bei unseren Admins. Du kannst dich alternativ auch direkt via {" "}

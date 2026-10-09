@@ -29,7 +29,7 @@ export default function TopSection() {
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:mx-0">
-          <h2 className="text-pretty text-4xl font-semibold text-gray-900 sm:text-5xl">
+          <h2 className="text-pretty text-3xl font-semibold text-gray-900">
             Wir sind Westwood Gaming
           </h2>
           <p className="mt-6 text-lg/8 text-black">

@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { CheckIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import DiscordBreaker from "@/components/DiscordBreaker/DiscordBreaker";
 import EventCard from "@/components/EventCard/EventCard";
 import { getUpcomingEvents } from "@/lib/events";
 import { games, getGame, type Game } from "@/lib/games";
@@ -71,56 +72,66 @@ async function GameContent({ params }: Props) {
                 <p className="text-xs text-green-400">{game.online + " online"}</p>
               </div>
             </div>
-            <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-white uppercase sm:text-5xl lg:text-6xl">
+            <h1 className="mt-4 text-pretty text-3xl font-semibold text-white sm:text-4xl">
               {game.name}
             </h1>
           </div>
         </div>
       </section>
 
-      <div className="w-full bg-white py-20">
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-x-12 gap-y-16 px-6 lg:grid-cols-3 lg:px-8">
-          <div className="lg:col-span-2">
-            <h2 className="mb-4 text-2xl font-semibold text-black">/ Über {game.name}</h2>
-            <div className="flex flex-col gap-4 text-base/7 text-gray-600">
-              {game.description.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
-
-            <h2 className="mt-16 mb-4 text-2xl font-semibold text-black">/ Das erwartet dich</h2>
-            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {game.highlights.map((highlight) => (
-                <li key={highlight} className="flex items-start gap-3 text-base/7 text-gray-900">
-                  <CheckIcon aria-hidden="true" className="mt-1 size-5 flex-none" />
-                  {highlight}
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-16 flex flex-col gap-4 sm:flex-row">
-              <a
-                href="https://discord.gg/shbJrNYQ6y"
-                target="_blank"
-                className="flex items-center justify-center rounded-md bg-black px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-gray-800"
-              >
-                Discord beitreten
-              </a>
-              <Link
-                href="/"
-                className="flex items-center justify-center rounded-md border border-black px-5 py-3 text-sm font-semibold text-black transition-all hover:bg-stone-100"
-              >
-                Alle Spiele
+      <div className="w-full bg-gray-100">
+        <nav aria-label="Breadcrumb" className="mx-auto w-full max-w-7xl px-6 py-3 lg:px-8">
+          <ol className="flex items-center gap-2 text-sm text-gray-600">
+            <li>
+              <Link href="/" className="hover:text-black">
+                Start
               </Link>
-            </div>
+            </li>
+            <li aria-hidden="true">
+              <ChevronRightIcon className="size-4" />
+            </li>
+            <li>
+              <Link href="/#spiele" className="hover:text-black">
+                Spiele
+              </Link>
+            </li>
+            <li aria-hidden="true">
+              <ChevronRightIcon className="size-4" />
+            </li>
+            <li aria-current="page" className="font-semibold text-black">
+              {game.name}
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <div className="flex w-full flex-col gap-20 bg-white pt-12 pb-20">
+        <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
+          <h2 className="mb-4 text-2xl font-semibold text-black">Über {game.name}</h2>
+          <div className="flex flex-col gap-4 text-base/7 text-gray-600">
+            {game.description.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
           </div>
 
-          <div>
-            <h2 className="mb-4 text-2xl font-semibold text-black">/ Events</h2>
-            <Suspense fallback={null}>
-              <EventList game={game} />
-            </Suspense>
-          </div>
+          <h2 className="mt-16 mb-4 text-2xl font-semibold text-black">Das erwartet dich</h2>
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {game.highlights.map((highlight) => (
+              <li key={highlight} className="flex items-start gap-3 text-base/7 text-gray-900">
+                <CheckIcon aria-hidden="true" className="mt-1 size-5 flex-none" />
+                {highlight}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <DiscordBreaker />
+
+        <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
+          <h2 className="mb-4 text-2xl font-semibold text-black">Events</h2>
+          <Suspense fallback={null}>
+            <EventList game={game} />
+          </Suspense>
         </div>
       </div>
     </>
@@ -135,7 +146,7 @@ async function EventList({ game }: { game: Game }) {
   }
 
   return (
-    <ul className="flex flex-col gap-6">
+    <ul className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {events.map((event) => (
         <li key={event.id}>
           <EventCard event={event} image={game.image} game={game.name} />

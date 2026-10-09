@@ -57,7 +57,7 @@ export default function EventFilter({ upcoming, past }: { upcoming: GameEvent[];
 
       {visiblePast.length > 0 && (
         <div className="mt-20">
-          <h2 className="mb-4 text-2xl font-semibold text-black">/ Vergangene Events</h2>
+          <h2 className="mb-4 text-2xl font-semibold text-black">Vergangene Events</h2>
           <EventGrid events={visiblePast} />
         </div>
       )}
