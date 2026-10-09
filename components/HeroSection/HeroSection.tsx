@@ -55,7 +55,7 @@ export default function HeroSection() {
                 <p className="w-fit animate-[hero-rise_0.7s_ease-out_both] motion-reduce:animate-none rounded-sm border border-white px-1 text-xs font-extralight text-white [animation-delay:200ms]">
                   Community Game
                 </p>
-                <h2 className="mt-6 animate-[hero-rise_0.7s_ease-out_both] motion-reduce:animate-none text-5xl font-extrabold tracking-tight text-white uppercase [animation-delay:350ms] sm:text-6xl lg:text-7xl">
+                <h2 className="mt-6 animate-[hero-rise_0.7s_ease-out_both] motion-reduce:animate-none text-pretty text-4xl font-semibold text-white [animation-delay:350ms] sm:text-5xl">
                   <span className="text-white/40">/</span> {slide.name}
                 </h2>
                 <p className="mt-6 animate-[hero-rise_0.7s_ease-out_both] motion-reduce:animate-none text-base/7 text-gray-300 [animation-delay:500ms] sm:text-lg/8">{slide.teaser}</p>
