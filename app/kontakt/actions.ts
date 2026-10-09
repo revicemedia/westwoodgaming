@@ -68,13 +68,13 @@ export async function sendContactMessage(_prevState: ContactState, formData: For
         embeds: [
           {
             title: `Neue Nachricht: ${values.subject}`,
-            description: values.message,
             fields: [
               { name: 'Kategorie', value: values.category },
               { name: 'Name', value: values.name, inline: true },
               { name: 'E-Mail', value: values.email, inline: true },
               { name: 'Telefon', value: values.phone || '–', inline: true },
             ],
+            description: values.message,
             timestamp: new Date().toISOString(),
           },
         ],

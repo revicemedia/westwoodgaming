@@ -9,6 +9,7 @@ export type Game = {
   name: string
   image: string
   category: string
+  discordNames: string[]
   online: number
   teaser: string
   description: string[]
@@ -22,6 +23,7 @@ export const games: Game[] = [
     name: 'EA FC 27',
     image: '/EAFC.jpg',
     category: 'Community Game',
+    discordNames: ['ea sports fc 27', 'ea fc 27'],
     online: 8,
     teaser:
       'Clubs, Ultimate Team oder der schnelle Feierabend-Kick: Bei uns findest du jederzeit Mitspieler für die nächste Partie.',
@@ -40,6 +42,7 @@ export const games: Game[] = [
     name: 'GTA V',
     image: '/GTAVI.jpg',
     category: 'Community Game',
+    discordNames: ['grand theft auto v', 'gta v'],
     online: 6,
     teaser: 'Heists, Rennen und Chaos in Los Santos – mit der Crew macht die offene Welt erst richtig Spaß.',
     description: [
@@ -57,6 +60,7 @@ export const games: Game[] = [
     name: 'Battlefield 6',
     image: '/BF6.jpg',
     category: 'Community Game',
+    discordNames: ['battlefield 6'],
     online: 1,
     teaser: 'Squad auffüllen, Fahrzeuge besetzen, Punkte halten: Wir spielen im Team und mit Voice.',
     description: [
@@ -74,6 +78,7 @@ export const games: Game[] = [
     name: 'Call of Duty',
     image: '/COD.jpg',
     category: 'Community Game',
+    discordNames: ['call of duty', 'warzone'],
     online: 4,
     teaser: 'Multiplayer, Warzone oder Zombies – such dir deinen Modus aus und spring in unseren Squad.',
     description: [

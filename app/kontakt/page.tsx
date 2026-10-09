@@ -34,14 +34,14 @@ export default function KontaktPage() {
       <div className="w-full bg-white py-20">
         <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
           <div>
-            <h2 className="mb-4 text-2xl font-semibold text-black">/ Schreib uns</h2>
+            <h2 className="mb-4 text-2xl font-semibold text-black">/ Kontaktiere uns</h2>
             <p className="max-w-3xl text-base/7 text-gray-600">
               Du hast eine Frage, möchtest mitmachen oder ein Problem melden? Schreib uns – deine Nachricht landet
-              direkt bei unseren Admins. Am schnellsten erreichst du uns im{" "}
+              direkt bei unseren Admins. Du kannst dich alternativ auch direkt via {" "}
               <a href="https://discord.gg/shbJrNYQ6y" target="_blank" className="font-semibold text-black underline">
-                Discord
+                Discord 
               </a>
-              .
+               {" "}bei uns melden.
             </p>
             <div className="mt-10">
               <ContactForm />

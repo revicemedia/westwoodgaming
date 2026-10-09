@@ -24,10 +24,7 @@ export default function ContactForm() {
     return (
       <div role="status" className="flex gap-3 rounded-md bg-green-100 border border-dotted border-green-900 p-6 justify-center items-center">
         <CheckCircleIcon aria-hidden="true" className="size-7 shrink-0 text-green-900" />
-        <div>
-          <p className="text-lg font-semibold text-white">{state.message}</p>
-          <p className="mt-1 text-sm/6 text-black">Deine Nachricht wurde erfolgreich verarbeitet & du wirst zügig eine Rückmeldung erhalten.</p>
-        </div>
+        <p className="text-sm/6 text-black">Deine Nachricht wurde erfolgreich verarbeitet & du wirst zügig eine Rückmeldung erhalten.</p>
       </div>
     )
   }
