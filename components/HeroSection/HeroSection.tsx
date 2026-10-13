@@ -19,13 +19,12 @@ export default function HeroSection() {
     <section
       aria-roledescription="carousel"
       aria-label="Unsere Community Spiele"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
       onFocus={(event) => setPaused(event.target.matches(':focus-visible'))}
       onBlur={() => setPaused(false)}
       className="relative overflow-hidden bg-black"
     >
-      <div className="grid">
+      {/* Pausiert nur über dem Slide selbst, nicht über Pfeilen und Punkten */}
+      <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} className="grid">
         {slides.map((slide, index) => (
           <div
             key={slide.name}

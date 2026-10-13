@@ -46,8 +46,9 @@ async function loadEvents() {
   }
 }
 
+// Remote-Cache: gilt für alle Server-Instanzen, die Datenbank wird nur nach Änderungen im Admin gefragt
 async function getEvents(): Promise<GameEvent[]> {
-  'use cache'
+  'use cache: remote'
   cacheTag(EVENTS_TAG)
   cacheLife('max')
 
