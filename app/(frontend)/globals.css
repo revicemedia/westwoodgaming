@@ -12,13 +12,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
@@ -33,60 +26,58 @@ body {
 }
 
 /* Formatierter Text aus dem Admin (News) */
-@layer components {
-  .rich-text {
-    font-size: 1rem;
-    line-height: 1.75rem;
-    color: var(--color-gray-600);
-  }
-  .rich-text > * + * {
-    margin-top: 1rem;
-  }
-  .rich-text h2,
-  .rich-text h3 {
-    margin-top: 2.5rem;
-    font-weight: 600;
-    color: var(--color-black);
-  }
-  .rich-text h2 {
-    font-size: 1.5rem;
-    line-height: 2rem;
-  }
-  .rich-text h3 {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-  }
-  .rich-text strong {
-    font-weight: 600;
-    color: var(--color-black);
-  }
-  .rich-text a {
-    font-weight: 600;
-    color: var(--color-black);
-    text-decoration: underline;
-  }
-  .rich-text ul,
-  .rich-text ol {
-    padding-left: 1.5rem;
-  }
-  .rich-text ul {
-    list-style: disc;
-  }
-  .rich-text ol {
-    list-style: decimal;
-  }
-  .rich-text li + li {
-    margin-top: 0.25rem;
-  }
-  .rich-text blockquote {
-    border-left: 2px solid var(--color-black);
-    padding-left: 1rem;
-    color: var(--color-black);
-  }
-  .rich-text hr {
-    margin-block: 2.5rem;
-    border-color: var(--color-gray-200);
-  }
+.news-content {
+  font-size: 1rem;
+  line-height: 1.75rem;
+  color: var(--color-gray-600);
+}
+.news-content > * + * {
+  margin-top: 1rem;
+}
+.news-content h2,
+.news-content h3 {
+  margin-top: 2.5rem;
+  font-weight: 600;
+  color: var(--color-black);
+}
+.news-content h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+.news-content h3 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+.news-content strong {
+  font-weight: 600;
+  color: var(--color-black);
+}
+.news-content a {
+  font-weight: 600;
+  color: var(--color-black);
+  text-decoration: underline;
+}
+.news-content ul,
+.news-content ol {
+  padding-left: 1.5rem;
+}
+.news-content ul {
+  list-style: disc;
+}
+.news-content ol {
+  list-style: decimal;
+}
+.news-content li + li {
+  margin-top: 0.25rem;
+}
+.news-content blockquote {
+  border-left: 2px solid var(--color-black);
+  padding-left: 1rem;
+  color: var(--color-black);
+}
+.news-content hr {
+  margin-block: 2.5rem;
+  border-color: var(--color-gray-200);
 }
 
 @keyframes slide-progress {
