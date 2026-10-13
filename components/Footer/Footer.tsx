@@ -2,7 +2,7 @@ import OnlineBanner from '@/components/OnlineBanner/OnlineBanner'
 
 const navigation = {
   main: [
-    { name: 'News', href: '#' },
+    { name: 'News', href: '/news' },
     { name: 'Games', href: '#' },
     { name: 'Community', href: '#' },
     { name: 'Kontakt', href: '/kontakt' },

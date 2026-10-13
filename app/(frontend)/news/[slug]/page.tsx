@@ -1,0 +1,106 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { RichText } from "@payloadcms/richtext-lexical/react";
+import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
+import { getNewsArticle } from "@/lib/news";
+
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await getNewsArticle(slug);
+  if (!article) return {};
+
+  return {
+    title: `${article.title} | Westwood Gaming`,
+    description: article.preview,
+  };
+}
+
+export default function NewsArticlePage({ params }: Props) {
+  return (
+    <Suspense fallback={<ArticleFallback />}>
+      <ArticleContent params={params} />
+    </Suspense>
+  );
+}
+
+function ArticleFallback() {
+  return (
+    <>
+      <div className="min-h-96 bg-black sm:min-h-120 lg:min-h-[min(40vw,70svh)]" />
+      <div className="min-h-96 bg-white" />
+    </>
+  );
+}
+
+async function ArticleContent({ params }: Props) {
+  const { slug } = await params;
+  const article = await getNewsArticle(slug);
+  if (!article) notFound();
+
+  return (
+    <>
+      <section className="relative isolate overflow-hidden bg-black">
+        <Image
+          alt={article.imageAlt}
+          src={article.image}
+          fill
+          sizes="(min-width: 1024px) 100vw, 1200px"
+          preload
+          className="-z-20 object-cover"
+        />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-linear-to-t from-black via-black/60 to-transparent" />
+
+        <div className="mx-auto flex min-h-96 max-w-7xl items-end px-6 pt-24 pb-10 sm:min-h-120 lg:min-h-[min(40vw,70svh)] lg:px-8">
+          <div>
+            <p className="w-fit rounded-sm border border-white px-1 text-xs font-extralight text-white">{article.category}</p>
+            <h1 className="mt-4 max-w-4xl text-pretty text-3xl font-semibold text-white sm:text-4xl">{article.title}</h1>
+            <p className="mt-3 text-sm text-white">
+              {article.author} · {article.date}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="w-full bg-gray-100">
+        <nav aria-label="Breadcrumb" className="mx-auto w-full max-w-7xl px-6 py-3 lg:px-8">
+          <ol className="flex items-center gap-2 text-sm text-gray-600">
+            <li>
+              <Link href="/" className="hover:text-black">
+                Start
+              </Link>
+            </li>
+            <li aria-hidden="true">
+              <ChevronRightIcon className="size-4" />
+            </li>
+            <li>
+              <Link href="/news" className="hover:text-black">
+                News
+              </Link>
+            </li>
+            <li aria-hidden="true">
+              <ChevronRightIcon className="size-4" />
+            </li>
+            <li aria-current="page" className="truncate font-semibold text-black">
+              {article.title}
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <div className="w-full bg-white pt-12 pb-20">
+        <article className="mx-auto w-full max-w-7xl px-6 lg:px-8">
+          <p className="max-w-3xl text-lg/8 text-black">{article.preview}</p>
+          <RichText data={article.content as SerializedEditorState} className="rich-text mt-8 max-w-3xl" />
+        </article>
+      </div>
+    </>
+  );
+}
