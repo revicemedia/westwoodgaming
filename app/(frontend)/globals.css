@@ -10,6 +10,10 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Markenfarben: text-purple, bg-lime, border-purple, ... */
+  --color-purple: #7f3aef;
+  --color-lime: #c6ff34;
 }
 
 body {

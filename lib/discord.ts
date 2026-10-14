@@ -30,12 +30,15 @@ export async function getDiscordStatus(): Promise<DiscordStatus | null> {
 
   let widget: Widget
   try {
-    const response = await fetch(WIDGET_URL)
+    const response = await fetch(WIDGET_URL, { signal: AbortSignal.timeout(5000) })
     if (!response.ok) return null
     widget = await response.json()
   } catch {
     return null
   }
+
+  // Antwortet Discord unerwartet (z. B. Widget deaktiviert), gibt es keinen Status statt eines Fehlers
+  if (!Array.isArray(widget?.members) || typeof widget.presence_count !== 'number') return null
 
   const counts: Record<string, number> = Object.fromEntries(games.map((game) => [game.slug, 0]))
   for (const member of widget.members) {
@@ -53,5 +56,5 @@ export async function getDiscordStatus(): Promise<DiscordStatus | null> {
     .sort(() => Math.random() - 0.5)
     .slice(0, 4)
 
-  return { online: widget.presence_count - bots, games: counts, avatars }
+  return { online: Math.max(widget.presence_count - bots, 0), games: counts, avatars }
 }
