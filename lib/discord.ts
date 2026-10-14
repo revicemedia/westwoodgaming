@@ -7,11 +7,13 @@ const BOTS = ['Westwood Carl']
 export type DiscordStatus = {
   online: number
   games: Record<string, number>
+  // bis zu 4 zufällige Avatare von Mitgliedern, die gerade online sind
+  avatars: string[]
 }
 
 type Widget = {
   presence_count: number
-  members: { username: string; game?: { name: string } }[]
+  members: { username: string; avatar_url?: string; game?: { name: string } }[]
 }
 
 function normalize(name: string) {
@@ -45,5 +47,11 @@ export async function getDiscordStatus(): Promise<DiscordStatus | null> {
 
   const bots = widget.members.filter((member) => BOTS.includes(member.username)).length
 
-  return { online: widget.presence_count - bots, games: counts }
+  const avatars = widget.members
+    .filter((member) => member.avatar_url && !BOTS.includes(member.username))
+    .map((member) => member.avatar_url as string)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 4)
+
+  return { online: widget.presence_count - bots, games: counts, avatars }
 }

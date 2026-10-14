@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useDiscordStatus } from '@/lib/useDiscordStatus'
 
@@ -12,7 +13,22 @@ export default function DiscordBreaker() {
         <div className="relative isolate overflow-hidden bg-black px-6 py-24 text-center shadow-2xl sm:rounded-md sm:px-16">
           <div className="flex h-7 items-center justify-center">
             {status && (
-              <p className="flex items-center gap-2 rounded-sm border border-white/20 bg-white/10 px-3 py-1 text-xs font-normal text-white">
+              <p className="flex items-center gap-2 rounded-sm bg-white/10 px-3 py-1 text-xs font-normal text-white">
+                {status.avatars.length > 0 && (
+                  <span aria-hidden="true" className="mr-1 flex -space-x-1.5">
+                    {status.avatars.map((avatar) => (
+                      <Image
+                        key={avatar}
+                        src={avatar}
+                        alt=""
+                        width={20}
+                        height={20}
+                        unoptimized
+                        className="size-5 rounded-full bg-gray-800 ring-2 ring-neutral-900"
+                      />
+                    ))}
+                  </span>
+                )}
                 <span className="size-1.5 animate-pulse rounded-full bg-green-400 motion-reduce:animate-none"></span>
                 {status.online} Mitglieder sind gerade online
               </p>
