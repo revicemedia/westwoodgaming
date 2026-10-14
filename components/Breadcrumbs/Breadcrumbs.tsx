@@ -5,7 +5,7 @@ import { ChevronRightIcon } from '@heroicons/react/24/outline'
 // Graue Leiste unter dem Seitenkopf. Der letzte Eintrag ist die aktuelle Seite.
 export default function Breadcrumbs({ items }: { items: { name: string; href?: string }[] }) {
   return (
-    <div className="sticky top-24 z-30 w-full bg-gray-100">
+    <div data-breadcrumbs className="sticky top-24 z-30 w-full bg-gray-100">
       <nav aria-label="Breadcrumb" className="mx-auto w-full max-w-7xl px-6 py-3 lg:px-8">
         <ol className="flex items-center gap-2 text-sm text-gray-600">
           {items.map((item, index) => (

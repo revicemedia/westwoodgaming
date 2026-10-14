@@ -83,7 +83,9 @@ export default function ContactForm() {
           <label htmlFor="category" className="text-sm font-semibold text-gray-900">
             Kategorie
           </label>
-          <div className="relative">
+          {/* grid verhindert, dass der Außenabstand des Selects aus dem Container herausfällt
+              und das Icon dadurch zu tief sitzt */}
+          <div className="relative grid">
             <select
               id="category"
               name="category"
