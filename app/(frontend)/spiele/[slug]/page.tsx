@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { CheckIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { CheckIcon } from "@heroicons/react/24/outline";
 import DiscordBreaker from "@/components/DiscordBreaker/DiscordBreaker";
 import EventCard from "@/components/EventCard/EventCard";
 import { getUpcomingEvents } from "@/lib/events";
@@ -79,31 +79,7 @@ async function GameContent({ params }: Props) {
         </div>
       </section>
 
-      <div className="w-full bg-gray-100">
-        <nav aria-label="Breadcrumb" className="mx-auto w-full max-w-7xl px-6 py-3 lg:px-8">
-          <ol className="flex items-center gap-2 text-sm text-gray-600">
-            <li>
-              <Link href="/" className="hover:text-black">
-                Start
-              </Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRightIcon className="size-4" />
-            </li>
-            <li>
-              <Link href="/#spiele" className="hover:text-black">
-                Spiele
-              </Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRightIcon className="size-4" />
-            </li>
-            <li aria-current="page" className="font-semibold text-black">
-              {game.name}
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <Breadcrumbs items={[{ name: "Start", href: "/" }, { name: "Spiele", href: "/#spiele" }, { name: game.name }]} />
 
       <div className="flex w-full flex-col gap-20 bg-white pt-12 pb-20">
         <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">

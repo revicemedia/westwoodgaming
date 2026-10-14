@@ -6,7 +6,7 @@ const navigation = {
     { name: 'Games', href: '#' },
     { name: 'Community', href: '#' },
     { name: 'Kontakt', href: '/kontakt' },
-    { name: 'Impressum', href: '#' },
+    { name: 'Impressum', href: '/impressum' },
   ],
   social: [
     {

@@ -1,16 +1,23 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { RichText } from "@payloadcms/richtext-lexical/react";
 import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
-import { getNewsArticle } from "@/lib/news";
+import { getNews, getNewsArticle } from "@/lib/news";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
+
+// Bekannte Artikel werden beim Build fertig vorgerendert. Neue Artikel zeigen beim
+// allerersten Aufruf kurz den Platzhalter und liegen danach ebenfalls fertig im Cache.
+export async function generateStaticParams() {
+  const news = await getNews();
+  // Cache Components verlangt mindestens einen Eintrag; der Platzhalter führt auf 404
+  return news.length > 0 ? news.map((item) => ({ slug: item.slug })) : [{ slug: "__placeholder__" }];
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -69,31 +76,7 @@ async function ArticleContent({ params }: Props) {
         </div>
       </section>
 
-      <div className="w-full bg-gray-100">
-        <nav aria-label="Breadcrumb" className="mx-auto w-full max-w-7xl px-6 py-3 lg:px-8">
-          <ol className="flex items-center gap-2 text-sm text-gray-600">
-            <li>
-              <Link href="/" className="hover:text-black">
-                Start
-              </Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRightIcon className="size-4" />
-            </li>
-            <li>
-              <Link href="/news" className="hover:text-black">
-                News
-              </Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRightIcon className="size-4" />
-            </li>
-            <li aria-current="page" className="truncate font-semibold text-black">
-              {article.title}
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <Breadcrumbs items={[{ name: "Start", href: "/" }, { name: "News", href: "/news" }, { name: article.title }]} />
 
       <div className="w-full bg-white pt-12 pb-20">
         <article className="mx-auto w-full max-w-7xl px-6 lg:px-8">
