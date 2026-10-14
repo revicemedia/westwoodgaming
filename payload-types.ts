@@ -187,6 +187,8 @@ export interface Media {
    * Kurze Beschreibung des Bildes für Screenreader.
    */
   alt?: string | null;
+  prefix?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -341,6 +343,8 @@ export interface NewsSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

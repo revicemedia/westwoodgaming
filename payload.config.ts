@@ -85,6 +85,8 @@ export default buildConfig({
       collections: { media: true },
       token: process.env.BLOB_READ_WRITE_TOKEN,
       clientUploads: true,
+      // Felder des Plugins auch lokal (ohne Token) anlegen, damit Migrationen lokal und live gleich sind
+      alwaysInsertFields: true,
     }),
   ],
 })
