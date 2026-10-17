@@ -12,6 +12,10 @@ export type NewsItem = {
   category: string
   author: string
   date: string
+  // für das Datums-Badge auf der Kachel
+  day: string
+  month: string
+  publishedAt: string
   image: string
   imageAlt: string
   preview: string
@@ -25,6 +29,8 @@ const dateFormat = new Intl.DateTimeFormat('de-DE', {
   year: 'numeric',
   timeZone: 'Europe/Berlin',
 })
+const dayFormat = new Intl.DateTimeFormat('de-DE', { day: '2-digit', timeZone: 'Europe/Berlin' })
+const monthFormat = new Intl.DateTimeFormat('de-DE', { month: 'short', timeZone: 'Europe/Berlin' })
 
 function toItem(doc: News): NewsItem {
   const category = getNewsCategory(doc.category)
@@ -37,6 +43,9 @@ function toItem(doc: News): NewsItem {
     category: category.label,
     author: doc.author,
     date: dateFormat.format(new Date(doc.publishedAt)),
+    day: dayFormat.format(new Date(doc.publishedAt)).replace('.', ''),
+    month: monthFormat.format(new Date(doc.publishedAt)).replace('.', ''),
+    publishedAt: doc.publishedAt,
     // ohne eigenes Bild steht das Bild der Kategorie
     image: image?.url ?? category.image,
     imageAlt: image?.alt ?? '',
