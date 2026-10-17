@@ -7,16 +7,19 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+// match: Pfad, unter dem der Punkt als aktiv gilt (Standard: href)
 const navigation = [
   { name: 'START', href: '/' },
+  { name: 'SPIELE', href: '/#spiele', match: '/spiele' },
   { name: 'NEWS', href: '/news' },
   { name: 'EVENTS', href: '/events' },
   { name: 'KONTAKT', href: '/kontakt' },
 ]
 
 // Start nur exakt, alle anderen auch für Unterseiten (z. B. /news/artikel)
-function isActive(pathname: string, href: string) {
-  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+function isActive(pathname: string, item: { href: string; match?: string }) {
+  const path = item.match ?? item.href
+  return path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(`${path}/`)
 }
 
 export default function Navbar() {
@@ -54,7 +57,7 @@ export default function Navbar() {
             <a
               key={item.name}
               href={item.href}
-              aria-current={isActive(pathname, item.href) ? 'page' : undefined}
+              aria-current={isActive(pathname, item) ? 'page' : undefined}
               className="text-sm/6 font-semibold text-gray-900 transition-colors hover:text-purple aria-[current=page]:text-purple"
             >
               {item.name}
@@ -113,7 +116,7 @@ export default function Navbar() {
                   <a
                     key={item.name}
                     href={item.href}
-                    aria-current={isActive(pathname, item.href) ? 'page' : undefined}
+                    aria-current={isActive(pathname, item) ? 'page' : undefined}
                     className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 aria-[current=page]:bg-gray-50 aria-[current=page]:text-purple"
                   >
                     {item.name}

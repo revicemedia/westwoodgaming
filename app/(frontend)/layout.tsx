@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" className={googleSansFlex.className}>
+    <html lang="de" data-scroll-behavior="smooth" className={googleSansFlex.className}>
       <body className="bg-white">
         <Navbar />
         {children}
