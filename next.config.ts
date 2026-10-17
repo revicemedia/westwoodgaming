@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
   },
+  // Nur Dev-Server: Zugriff vom Handy im Heimnetz erlauben (sonst lädt dort kein JavaScript)
+  allowedDevOrigins: ["192.168.178.*"],
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

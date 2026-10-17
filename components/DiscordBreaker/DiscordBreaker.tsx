@@ -1,40 +1,16 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { useDiscordStatus } from '@/lib/useDiscordStatus'
+import OnlinePill from '@/components/OnlinePill/OnlinePill'
+import { links } from '@/lib/links'
 
 export default function DiscordBreaker() {
-  const status = useDiscordStatus()
-
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="relative isolate overflow-hidden bg-black px-6 py-24 text-center shadow-2xl sm:rounded-md sm:px-16">
           <div className="flex h-7 items-center justify-center">
-            {status && (
-              <p className="flex items-center gap-2 rounded-sm bg-white/10 px-3 py-1 text-xs font-normal text-white">
-                {status.avatars.length > 0 && (
-                  <span aria-hidden="true" className="mr-1 flex -space-x-1.5">
-                    {status.avatars.map((avatar) => (
-                      <Image
-                        key={avatar}
-                        src={avatar}
-                        alt=""
-                        width={20}
-                        height={20}
-                        unoptimized
-                        // lädt ein Avatar nicht, verschwindet er statt eines kaputten Bildes
-                        onError={(event) => (event.currentTarget.style.display = 'none')}
-                        className="size-5 rounded-full bg-gray-800 ring-2 ring-neutral-900"
-                      />
-                    ))}
-                  </span>
-                )}
-                <span className="size-1.5 animate-pulse rounded-full bg-green-400 motion-reduce:animate-none"></span>
-                {status.online} Mitglieder sind gerade online
-              </p>
-            )}
+            <OnlinePill className="bg-white/10 px-3 py-1 text-white" ringClassName="ring-neutral-900" />
           </div>
           <h2 className="mt-6 text-balance text-3xl font-semibold text-white">
             Dein Weg zu uns
@@ -45,7 +21,7 @@ export default function DiscordBreaker() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-x-6 gap-y-4 sm:flex-row">
             <a
-              href="https://discord.gg/shbJrNYQ6y"
+              href={links.discord}
               target="_blank"
               className="flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-black transition-all hover:bg-stone-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >

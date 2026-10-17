@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
 import ContactForm from "@/components/ContactForm/ContactForm";
+import { links } from "@/lib/links";
 
 export const metadata: Metadata = {
   title: "Kontakt | Westwood Gaming",
@@ -41,7 +42,7 @@ export default function KontaktPage() {
             <p className="max-w-3xl text-base/7 text-gray-600">
               Du hast eine Frage, möchtest mitmachen oder ein Problem melden? Schreib uns – deine Nachricht landet
               direkt bei unseren Admins. Du kannst dich alternativ auch direkt via {" "}
-              <a href="https://discord.gg/shbJrNYQ6y" target="_blank" className="font-semibold text-black">
+              <a href={links.discord} target="_blank" className="font-semibold text-black">
                 Discord 
               </a>
                {" "}bei uns melden.

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { games } from '@/lib/games'
+import { links } from '@/lib/links'
 
 const slides = games
 
@@ -60,7 +61,7 @@ export default function HeroSection() {
                 <p className="mt-6 animate-[hero-rise_0.7s_ease-out_both] motion-reduce:animate-none text-base/7 text-gray-300 [animation-delay:500ms] sm:text-lg/8">{slide.teaser}</p>
                 <div className="mt-10 flex animate-[hero-rise_0.7s_ease-out_both] motion-reduce:animate-none flex-col gap-4 [animation-delay:650ms] sm:flex-row">
                   <a
-                    href="https://discord.gg/shbJrNYQ6y"
+                    href={links.discord}
                     target="_blank"
                     className="flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-black transition-all hover:bg-stone-200"
                   >
@@ -70,7 +71,7 @@ export default function HeroSection() {
                     Discord beitreten
                   </a>
                   <a
-                    href="https://www.twitch.tv/mfgfaith"
+                    href={links.twitch}
                     target="_blank"
                     className="flex items-center justify-center gap-2 rounded-md border border-white px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-white/10"
                   >
