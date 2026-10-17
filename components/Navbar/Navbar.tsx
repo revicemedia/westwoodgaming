@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const navigation = [
   { name: 'START', href: '/' },
@@ -13,8 +14,14 @@ const navigation = [
   { name: 'KONTAKT', href: '/kontakt' },
 ]
 
+// Start nur exakt, alle anderen auch für Unterseiten (z. B. /news/artikel)
+function isActive(pathname: string, href: string) {
+  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+}
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
 
   return (
     <header data-navbar className="sticky top-0 z-40 bg-white">
@@ -44,7 +51,12 @@ export default function Navbar() {
         </div>
         <div className="hidden lg:flex lg:gap-x-12">
           {navigation.map((item) => (
-            <a key={item.name} href={item.href} className="text-sm/6 font-semibold text-gray-900 transition-colors hover:text-purple">
+            <a
+              key={item.name}
+              href={item.href}
+              aria-current={isActive(pathname, item.href) ? 'page' : undefined}
+              className="text-sm/6 font-semibold text-gray-900 transition-colors hover:text-purple aria-[current=page]:text-purple"
+            >
               {item.name}
             </a>
           ))}
@@ -101,7 +113,8 @@ export default function Navbar() {
                   <a
                     key={item.name}
                     href={item.href}
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                    aria-current={isActive(pathname, item.href) ? 'page' : undefined}
+                    className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 aria-[current=page]:bg-gray-50 aria-[current=page]:text-purple"
                   >
                     {item.name}
                   </a>

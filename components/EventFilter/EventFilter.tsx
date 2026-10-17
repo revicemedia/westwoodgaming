@@ -38,7 +38,7 @@ export default function EventFilter({ upcoming, past }: { upcoming: GameEvent[];
             type="button"
             onClick={() => setActive(filter.slug)}
             aria-pressed={active === filter.slug}
-            className={`rounded-md border border-black px-4 py-2 text-sm font-semibold transition-all ${
+            className={`rounded-md border border-black px-4 py-1.5 text-sm font-semibold transition-all ${
               active === filter.slug ? 'bg-black text-white' : 'text-black hover:bg-stone-100'
             }`}
           >

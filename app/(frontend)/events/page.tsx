@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
 import { Suspense } from "react";
 import EventFilter from "@/components/EventFilter/EventFilter";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
@@ -33,7 +34,9 @@ export default function EventsPage() {
         </div>
       </section>
 
-      <div className="w-full bg-white py-20">
+      <Breadcrumbs items={[{ name: "Start", href: "/" }, { name: "Events" }]} />
+
+      <div className="w-full bg-white pt-12 pb-20">
         <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
           <h2 className="mb-4 text-2xl font-semibold text-black">Kommende Events</h2>
           <p className="max-w-3xl text-base/7 text-gray-600">
