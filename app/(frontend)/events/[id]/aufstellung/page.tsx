@@ -48,6 +48,11 @@ async function LineupContent({ params }: Props) {
   const [user, slots] = await Promise.all([getDiscordUser(), getLineupSlots(event.id)]);
   const path = `/events/${event.id}/aufstellung`;
   const mySlot = user ? slots.find((slot) => slot.discordId === user.id) : undefined;
+  // Eingetragene in der Reihenfolge der Aufstellung (Sturm zuerst, Torwart zuletzt)
+  const players = formation.flatMap((position) => {
+    const slot = slots.find((entry) => entry.position === position.key);
+    return slot ? [{ position, slot }] : [];
+  });
   const free = formation.filter((position) => !slots.some((slot) => slot.position === position.key)).length;
 
   return (
@@ -61,7 +66,7 @@ async function LineupContent({ params }: Props) {
         <div className="mx-auto flex min-h-80 max-w-7xl items-end px-6 pt-24 pb-10 sm:min-h-96 lg:px-8">
           <div>
             <p className="w-fit rounded-sm border border-white px-1 text-xs font-extralight text-white">
-              {game?.name} · {event.formation}
+              {game?.name}
             </p>
             <h1 className="mt-4 text-pretty text-3xl font-semibold text-white sm:text-4xl">{event.title}</h1>
             <p className="mt-3 text-sm text-white">{formatEventDate(event.date)}</p>
@@ -74,9 +79,16 @@ async function LineupContent({ params }: Props) {
       <div className="w-full bg-white pt-12 pb-20">
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-3 lg:px-8">
           <div className="lg:order-2">
-            <h2 className="mb-4 text-2xl font-semibold text-black">Aufstellung</h2>
+            <h2 className="text-2xl font-semibold text-black">Aufstellung</h2>
+            <p className="mt-1 mb-4 flex items-center gap-2 text-lg font-semibold text-purple">
+              {/* Taktik-Icon aus public/tactics.svg, eingebettet damit es die Textfarbe übernimmt */}
+              <svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" className="size-6">
+                <path d="m650.23-140-41.77-41.77 63-64-63-63 41.77-42.77 64 64 63-64L820-308.77l-64 63 64 64L777.23-140l-63-63-64 63Zm-364.81-74.58Q300-229.15 300-250t-14.58-35.42Q270.85-300 250-300t-35.42 14.58Q200-270.85 200-250t14.58 35.42Q229.15-200 250-200t35.42-14.58ZM250-140q-45.77 0-77.88-32.12Q140-204.23 140-250q0-45.77 32.12-77.88Q204.23-360 250-360q36.23 0 65.19 21.27t39.5 56.27q42.85-7.54 71-40.69 28.16-33.16 28.16-76.85v-154.23q0-78.77 55.61-134.38 55.62-55.62 134.39-55.62h60.61l-73-73L674.23-860 820-714.23 674.23-568.46l-42.77-41.77 72.62-74h-60.23q-54.23 0-92.12 37.88-37.88 37.89-37.88 92.12V-400q0 68-45.27 118.5t-112.66 59.65q-9.3 36.23-38.88 59.04Q287.46-140 250-140Zm-68.23-468.46L140-650.23l63-64-63-63L181.77-820l64 64 63-64 42.77 42.77-64 63 64 64-42.77 41.77-63-63-64 63Z" />
+              </svg>
+              {event.formation}
+            </p>
             <p className="text-base/7 text-gray-600">
-              Wähle eine freie Position und trag dich ein. Pro Spieler ist ein Platz möglich; über das X an deinem
+              Wähle eine freie Position und trag dich ein. Pro Spieler ist ein Platz möglich, über das X an deinem
               Platz gibst du ihn wieder frei.
             </p>
             <p className="mt-4 text-sm font-semibold text-gray-900">
@@ -136,6 +148,25 @@ async function LineupContent({ params }: Props) {
                 </>
               )}
             </div>
+
+            {players.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-sm font-semibold text-gray-900">Eingetragen ({players.length})</h3>
+                <ul className="mt-3 divide-y divide-gray-100">
+                  {players.map(({ position, slot }) => (
+                    <li key={position.key} className="flex items-center gap-3 py-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={slot.discordAvatar ?? ""} alt="" className="size-8 rounded-full bg-gray-200" />
+                      <span className="min-w-0 flex-1 truncate text-sm text-gray-900">
+                        {slot.discordName}
+                        {slot.discordId === user?.id && <span className="text-gray-500"> (du)</span>}
+                      </span>
+                      <span className="rounded-sm border border-purple px-1 text-xs font-semibold text-purple">{position.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div className="lg:order-1 lg:col-span-2">
