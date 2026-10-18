@@ -65,7 +65,10 @@ export default function ImpressumPage() {
 
           <Section title="Kontakt">
             <p>
-              E-Mail: {provider.email}
+              E-Mail:{" "}
+              <a href={`mailto:${provider.email}`} className="font-semibold text-purple">
+                {provider.email}
+              </a>
             </p>
           </Section>
 
