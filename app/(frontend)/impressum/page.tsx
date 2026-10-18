@@ -9,12 +9,11 @@ export const metadata: Metadata = {
 
 // TODO: Platzhalter in eckigen Klammern vor dem Veröffentlichen durch echte Angaben ersetzen
 const provider = {
-  name: "[Vorname Nachname]",
-  street: "[Straße Hausnummer]",
-  city: "[PLZ Ort]",
+  name: "Fabian Hanso",
+  street: "Gartenstraße 7",
+  city: "56412 Ruppach-Goldhausen",
   country: "Deutschland",
-  email: "[E-Mail-Adresse]",
-  phone: "[Telefonnummer]",
+  email: "hey@revice-media.com",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -66,8 +65,6 @@ export default function ImpressumPage() {
 
           <Section title="Kontakt">
             <p>
-              Telefon: {provider.phone}
-              <br />
               E-Mail: {provider.email}
             </p>
           </Section>
