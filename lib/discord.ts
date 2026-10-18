@@ -1,7 +1,8 @@
 import { cacheLife } from 'next/cache'
 import { games } from '@/lib/games'
 
-const WIDGET_URL = 'https://discord.com/api/guilds/1557388100534149130/widget.json'
+export const GUILD_ID = '1557388100534149130'
+const WIDGET_URL = `https://discord.com/api/guilds/${GUILD_ID}/widget.json`
 const BOTS = ['Westwood Carl']
 
 export type DiscordStatus = {

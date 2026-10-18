@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     events: Event;
+    'lineup-slots': LineupSlot;
     news: News;
     media: Media;
     users: User;
@@ -76,9 +77,14 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    events: {
+      lineup: 'lineup-slots';
+    };
+  };
   collectionsSelect: {
     events: EventsSelect<false> | EventsSelect<true>;
+    'lineup-slots': LineupSlotsSelect<false> | LineupSlotsSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -134,6 +140,32 @@ export interface Event {
    */
   date?: string | null;
   description: string;
+  /**
+   * Optional. Spieler können sich dann über den Aufstellungs-Link mit Discord auf eine Position eintragen.
+   */
+  formation?: ('4-2-3-1' | '3-5-2' | '4-1-2-1-2') | null;
+  /**
+   * Zum Austragen einen Eintrag öffnen und löschen.
+   */
+  lineup?: {
+    docs?: (number | LineupSlot)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lineup-slots".
+ */
+export interface LineupSlot {
+  id: number;
+  event: number | Event;
+  position: string;
+  discordName: string;
+  discordId: string;
+  discordAvatar?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -256,6 +288,10 @@ export interface PayloadLockedDocument {
         value: number | Event;
       } | null)
     | ({
+        relationTo: 'lineup-slots';
+        value: number | LineupSlot;
+      } | null)
+    | ({
         relationTo: 'news';
         value: number | News;
       } | null)
@@ -318,6 +354,21 @@ export interface EventsSelect<T extends boolean = true> {
   game?: T;
   date?: T;
   description?: T;
+  formation?: T;
+  lineup?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lineup-slots_select".
+ */
+export interface LineupSlotsSelect<T extends boolean = true> {
+  event?: T;
+  position?: T;
+  discordName?: T;
+  discordId?: T;
+  discordAvatar?: T;
   updatedAt?: T;
   createdAt?: T;
 }

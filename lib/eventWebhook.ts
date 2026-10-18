@@ -52,18 +52,21 @@ export async function announceEvent(event: Event, logger: Payload['logger']) {
         ],
       }
 
-  // Abstimmung, nur im Discord
-  const poll = {
-    poll: {
-      question: { text: `${event.title.slice(0, 240)}: ${date}. Bist du dabei?` },
-      answers: [
-        { poll_media: { text: 'Dabei', emoji: { name: '👍' } } },
-        { poll_media: { text: 'Nicht dabei', emoji: { name: '👎' } } },
-      ],
-      duration: pollDuration(event.date),
-      allow_multiselect: false,
-    },
-  }
+  // Events mit Aufstellung bekommen den Link zum Eintragen, alle anderen die Abstimmung
+  const lineupUrl = event.formation ? `${siteUrl()}/events/${event.id}/aufstellung` : null
+  const extra = lineupUrl
+    ? { content: `**Trag dich auf deine Position ein:** [Zur Aufstellung (${event.formation})](<${lineupUrl}>)` }
+    : {
+        poll: {
+          question: { text: `${event.title.slice(0, 240)}: ${date}. Bist du dabei?` },
+          answers: [
+            { poll_media: { text: 'Dabei', emoji: { name: '👍' } } },
+            { poll_media: { text: 'Nicht dabei', emoji: { name: '👎' } } },
+          ],
+          duration: pollDuration(event.date),
+          allow_multiselect: false,
+        },
+      }
 
   const send = (message: object, file?: Blob) => {
     const body = new FormData()
@@ -74,18 +77,25 @@ export async function announceEvent(event: Event, logger: Payload['logger']) {
   }
 
   try {
-    let response = await send({ ...announcement, ...poll }, card)
+    let response = await send({ ...announcement, ...extra }, card)
 
     // Lehnt Discord Bild und Abstimmung in einer Nachricht ab, gehen sie getrennt raus
-    if (response.status === 400) {
+    if (response.status === 400 && !lineupUrl) {
       response = await send(announcement, card)
-      if (response.ok) response = await send(poll)
+      if (response.ok) response = await send(extra)
     }
 
     if (!response.ok) logger.error(`Discord-Webhook ${env} antwortet mit ${response.status}.`)
   } catch (cause) {
     logger.error({ err: cause }, `Discord-Webhook ${env} nicht erreichbar.`)
   }
+}
+
+// Öffentliche Adresse der Website für Links in Discord
+function siteUrl() {
+  if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, '')
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  return 'https://www.westwood-gaming.de'
 }
 
 // Laufzeit in Stunden: bis zum Termin, ohne Termin eine Woche (Discord erlaubt 1 bis 768)

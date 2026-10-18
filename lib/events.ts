@@ -10,6 +10,8 @@ export type GameEvent = {
   title: string
   date: string | null
   description: string
+  // gesetzt, wenn Spieler sich auf eine Aufstellung eintragen können
+  formation: string | null
 }
 
 // Ohne Endzeit gilt ein Event so lange nach Beginn noch als laufend
@@ -64,5 +66,6 @@ async function getEvents(): Promise<GameEvent[]> {
       title: event.title,
       date: event.date ?? null,
       description: event.description,
+      formation: event.formation ?? null,
     }))
 }
