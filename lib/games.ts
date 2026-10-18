@@ -8,6 +8,8 @@ export type Game = {
   teaser: string
   description: string[]
   highlights: string[]
+  // optional, erscheint nur auf der Seite dieses Spiels
+  modes?: { title: string; text: string; icon: 'team' | 'trophy' | 'duo' }[]
 }
 
 export const games: Game[] = [
@@ -24,7 +26,24 @@ export const games: Game[] = [
       'EA FC ist bei uns das Spiel für den gemeinsamen Feierabend. Ob eingespieltes Clubs-Team oder lockere Runde zu zweit – im Discord findest du schnell Leute, die gerade Lust auf eine Partie haben.',
       'Wir spielen ohne Leistungsdruck, aber mit Ehrgeiz. Neue Spieler sind jederzeit willkommen, egal auf welchem Niveau.',
     ],
-    highlights: ['Clubs mit festem Community-Team', 'Ultimate Team und Koop-Partien', 'Interne Turniere', 'Voice-Chat im Discord'],
+    highlights: ['Feste Konstellationen für erfolgreiche Sessions', 'Sprachchat für den problemlosen Austausch', 'Geregelte Abläufe ohne viel Ablenkung', 'Hohe Aktivität auf dem Server'],
+    modes: [
+      {
+        title: 'Clubs',
+        icon: 'team',
+        text: 'Elf echte Spieler, ein Team: In Pro Clubs übernimmst du deine feste Position und spielst mit unserem Community-Club in der Liga und in Freundschaftsspielen.',
+      },
+      {
+        title: 'Ultimate Team',
+        icon: 'trophy',
+        text: 'Squad bauen, Tipps austauschen, Rivals und Champions gemeinsam angehen. Bei uns findest du Leute, die genauso viel Zeit in ihre Mannschaft stecken wie du.',
+      },
+      {
+        title: 'KOOP Sessions',
+        icon: 'duo',
+        text: 'Zu zweit gegen den Rest: In Koop-Sessions spielst du gemeinsam mit einem Mitspieler aus der Community – locker zum Feierabend oder mit Ehrgeiz in den Rush-Modi.',
+      },
+    ],
   },
   {
     slug: 'gta-vi',

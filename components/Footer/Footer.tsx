@@ -4,8 +4,8 @@ import { links } from '@/lib/links'
 const navigation = {
   main: [
     { name: 'News', href: '/news' },
-    { name: 'Games', href: '#' },
-    { name: 'Community', href: '#' },
+    { name: 'Spiele', href: '/#spiele' },
+    { name: 'Admins', href: '/admins' },
     { name: 'Kontakt', href: '/kontakt' },
     { name: 'Impressum', href: '/impressum' },
   ],

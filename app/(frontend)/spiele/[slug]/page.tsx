@@ -3,11 +3,20 @@ import Image from "next/image";
 import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { CheckIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, TrophyIcon, UserGroupIcon, UsersIcon } from "@heroicons/react/24/outline";
 import DiscordBreaker from "@/components/DiscordBreaker/DiscordBreaker";
 import EventCard from "@/components/EventCard/EventCard";
 import { getUpcomingEvents } from "@/lib/events";
 import { games, getGame, type Game } from "@/lib/games";
+
+// Kacheln der Spielmodi reihum in den Markenfarben; badge = Icon-Fläche passend zur Kachel
+const modeColors = [
+  { tile: "bg-lime text-black", badge: "bg-black text-lime" },
+  { tile: "bg-purple text-white", badge: "bg-white text-purple" },
+  { tile: "bg-black text-white", badge: "bg-purple text-white" },
+];
+
+const modeIcons = { team: UserGroupIcon, trophy: TrophyIcon, duo: UsersIcon };
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -90,11 +99,44 @@ async function GameContent({ params }: Props) {
             ))}
           </div>
 
+          {game.modes && (
+            <>
+              <h2 className="mt-16 mb-4 text-2xl font-semibold text-black">Spielmodi</h2>
+              <ul className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                {game.modes.map((mode, index) => {
+                  const color = modeColors[index % modeColors.length];
+                  const Icon = modeIcons[mode.icon];
+
+                  return (
+                    <li
+                      key={mode.title}
+                      className={`group relative isolate flex h-full min-h-64 flex-col overflow-hidden rounded-md p-6 transition-transform duration-300 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${color.tile}`}
+                    >
+                      {/* großes Icon als Wasserzeichen */}
+                      <Icon
+                        aria-hidden="true"
+                        className="absolute -right-8 -bottom-8 -z-10 size-48 opacity-5 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transition-none"
+                      />
+                      <div className="flex items-center justify-between">
+                        <span className={`flex size-11 items-center justify-center rounded-md ${color.badge}`}>
+                          <Icon aria-hidden="true" className="size-6" />
+                        </span>
+                        <span className="text-sm font-semibold tabular-nums opacity-60">{String(index + 1).padStart(2, "0")}</span>
+                      </div>
+                      <p className="mt-auto pt-10 text-2xl font-semibold">{mode.title}</p>
+                      <p className="mt-2 text-sm/6 opacity-80">{mode.text}</p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+
           <h2 className="mt-16 mb-4 text-2xl font-semibold text-black">Das erwartet dich</h2>
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {game.highlights.map((highlight) => (
               <li key={highlight} className="flex items-start gap-3 text-base/7 text-gray-900">
-                <CheckIcon aria-hidden="true" className="mt-1 size-5 flex-none" />
+                <CheckIcon aria-hidden="true" className="mt-1 size-5 flex-none text-purple" />
                 {highlight}
               </li>
             ))}

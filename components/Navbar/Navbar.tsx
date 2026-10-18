@@ -2,23 +2,43 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Dialog, DialogPanel } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import {
+  CloseButton,
+  Dialog,
+  DialogPanel,
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Popover,
+  PopoverBackdrop,
+  PopoverButton,
+  PopoverPanel,
+} from '@headlessui/react'
+import { Bars3Icon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { links } from '@/lib/links'
 
+type NavItem = { name: string; href: string; match?: string }
+
 // match: Pfad, unter dem der Punkt als aktiv gilt (Standard: href)
-const navigation = [
+// Einträge mit children werden als Aufklappmenü dargestellt
+const navigation: (NavItem | { name: string; children: NavItem[] })[] = [
   { name: 'START', href: '/' },
-  { name: 'SPIELE', href: '/#spiele', match: '/spiele' },
   { name: 'NEWS', href: '/news' },
   { name: 'EVENTS', href: '/events' },
+  {
+    name: 'COMMUNITY',
+    children: [
+      { name: 'Spiele', href: '/#spiele', match: '/spiele' },
+      { name: 'Admins', href: '/admins' },
+    ],
+  },
   { name: 'KONTAKT', href: '/kontakt' },
 ]
 
 // Start nur exakt, alle anderen auch für Unterseiten (z. B. /news/artikel)
-function isActive(pathname: string, item: { href: string; match?: string }) {
+function isActive(pathname: string, item: NavItem) {
   const path = item.match ?? item.href
   return path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(`${path}/`)
 }
@@ -54,16 +74,46 @@ export default function Navbar() {
           </button>
         </div>
         <div className="hidden lg:flex lg:gap-x-12">
-          {navigation.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              aria-current={isActive(pathname, item) ? 'page' : undefined}
-              className="text-sm/6 font-semibold text-gray-900 transition-colors hover:text-purple aria-[current=page]:text-purple"
-            >
-              {item.name}
-            </a>
-          ))}
+          {navigation.map((item) =>
+            'children' in item ? (
+              <Popover key={item.name} className="relative">
+                <PopoverButton
+                  data-active={item.children.some((child) => isActive(pathname, child)) || undefined}
+                  className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900 transition-colors outline-none hover:text-purple data-active:text-purple data-open:text-purple"
+                >
+                  {item.name}
+                  <ChevronDownIcon aria-hidden="true" className="size-4 transition-transform in-data-open:rotate-180" />
+                </PopoverButton>
+                {/* unsichtbare Fläche über der Seite: ein Klick daneben schließt das Menü */}
+                <PopoverBackdrop className="fixed inset-0" />
+                <PopoverPanel
+                  transition
+                  className="absolute top-full left-1/2 z-10 mt-4 w-48 -translate-x-1/2 rounded-md bg-white p-2 shadow-lg ring-1 ring-gray-900/5 transition data-closed:translate-y-1 data-closed:opacity-0 data-enter:duration-150 data-leave:duration-100"
+                >
+                  {item.children.map((child) => (
+                    <CloseButton
+                      as="a"
+                      key={child.name}
+                      href={child.href}
+                      aria-current={isActive(pathname, child) ? 'page' : undefined}
+                      className="block rounded-sm px-3 py-2 text-sm/6 font-semibold text-gray-900 transition-colors hover:bg-gray-50 hover:text-purple aria-[current=page]:text-purple"
+                    >
+                      {child.name}
+                    </CloseButton>
+                  ))}
+                </PopoverPanel>
+              </Popover>
+            ) : (
+              <a
+                key={item.name}
+                href={item.href}
+                aria-current={isActive(pathname, item) ? 'page' : undefined}
+                className="text-sm/6 font-semibold text-gray-900 transition-colors hover:text-purple aria-[current=page]:text-purple"
+              >
+                {item.name}
+              </a>
+            ),
+          )}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:gap-x-6">
           <a href={links.discord} target='_blank' className="group relative text-gray-900">
@@ -113,16 +163,47 @@ export default function Navbar() {
           <div className="mt-6 flow-root">
             <div className="-my-6 divide-y divide-gray-500/10">
               <div className="space-y-2 py-6">
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    aria-current={isActive(pathname, item) ? 'page' : undefined}
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 aria-[current=page]:bg-gray-50 aria-[current=page]:text-purple"
-                  >
-                    {item.name}
-                  </a>
-                ))}
+                {navigation.map((item) =>
+                  'children' in item ? (
+                    <Disclosure
+                      key={item.name}
+                      as="div"
+                      // auf einer Unterseite gleich aufgeklappt
+                      defaultOpen={item.children.some((child) => isActive(pathname, child))}
+                      className="-mx-3"
+                    >
+                      <DisclosureButton
+                        data-active={item.children.some((child) => isActive(pathname, child)) || undefined}
+                        className="group flex w-full items-center justify-between rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 data-active:text-purple"
+                      >
+                        {item.name}
+                        <ChevronDownIcon aria-hidden="true" className="size-5 flex-none transition-transform group-data-open:rotate-180" />
+                      </DisclosureButton>
+                      <DisclosurePanel className="mt-1 space-y-1">
+                        {item.children.map((child) => (
+                          <a
+                            key={child.name}
+                            href={child.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            aria-current={isActive(pathname, child) ? 'page' : undefined}
+                            className="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50 aria-[current=page]:bg-gray-50 aria-[current=page]:text-purple"
+                          >
+                            {child.name}
+                          </a>
+                        ))}
+                      </DisclosurePanel>
+                    </Disclosure>
+                  ) : (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      aria-current={isActive(pathname, item) ? 'page' : undefined}
+                      className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 aria-[current=page]:bg-gray-50 aria-[current=page]:text-purple"
+                    >
+                      {item.name}
+                    </a>
+                  ),
+                )}
                 <a
                   href="/impressum"
                   className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"

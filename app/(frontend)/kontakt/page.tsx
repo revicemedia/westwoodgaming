@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
 import ContactForm from "@/components/ContactForm/ContactForm";
 import { links } from "@/lib/links";
@@ -41,7 +42,11 @@ export default function KontaktPage() {
             <h2 className="mb-4 text-2xl font-semibold text-black">Kontaktiere uns</h2>
             <p className="max-w-3xl text-base/7 text-gray-600">
               Du hast eine Frage, möchtest mitmachen oder ein Problem melden? Schreib uns – deine Nachricht landet
-              direkt bei unseren Admins. Du kannst dich alternativ auch direkt via {" "}
+              direkt bei unseren{" "}
+              <Link href="/admins" className="font-semibold text-black">
+                Admins
+              </Link>
+              . Du kannst dich alternativ auch direkt via {" "}
               <a href={links.discord} target="_blank" className="font-semibold text-black">
                 Discord 
               </a>
