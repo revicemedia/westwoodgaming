@@ -1,5 +1,5 @@
 import { revalidateTag } from 'next/cache'
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where } from 'payload'
 
 import { announceEvent } from '../lib/eventWebhook'
 import { formationKeys, getFormation, LINEUP_GAMES } from '../lib/formations'
@@ -28,21 +28,19 @@ export const Events: CollectionConfig = {
       async ({ doc, operation, req }) => {
         if (operation === 'create') await announceEvent(doc, req.payload.logger)
       },
-      // Wechselt die Aufstellung, fliegen Einträge auf Positionen raus, die es nicht mehr gibt
+      // Wechselt die Formation, fliegen Einträge auf Positionen raus, die es nicht mehr gibt
       async ({ doc, previousDoc, operation, req }) => {
         if (operation !== 'update' || doc.formation === previousDoc?.formation) return
         const keys = getFormation(doc.formation)?.map((position) => position.key) ?? []
-        await req.payload.delete({
-          collection: 'lineup-slots',
-          where: { and: [{ event: { equals: doc.id } }, { position: { not_in: keys } }] },
-          req,
-        })
+        const where: Where = { and: [{ event: { equals: doc.id } }, { position: { not_in: keys } }] }
+        await req.payload.delete({ collection: 'lineup-slots', where, req })
       },
     ],
     beforeDelete: [
-      // Aufstellung des Events mit entfernen
+      // Anmeldungen und Aufstellung des Events mit entfernen
       async ({ id, req }) => {
         await req.payload.delete({ collection: 'lineup-slots', where: { event: { equals: id } }, req })
+        await req.payload.delete({ collection: 'lineup-signups', where: { event: { equals: id } }, req })
       },
     ],
     afterDelete: [
@@ -85,25 +83,72 @@ export const Events: CollectionConfig = {
       required: true,
     },
     {
-      name: 'formation',
-      label: 'Aufstellung',
-      type: 'select',
-      options: formationKeys.map((key) => ({ label: key, value: key })),
+      name: 'lineupEnabled',
+      label: 'Anmeldung mit Aufstellung',
+      type: 'checkbox',
+      defaultValue: false,
       admin: {
-        description: 'Optional. Spieler können sich dann über den Aufstellungs-Link mit Discord auf eine Position eintragen.',
+        description:
+          'Spieler melden sich über den Aufstellungs-Link mit Discord an. Nach dem Anmeldeschluss schlägt die Seite Formation und Aufstellung vor, ein Admin gibt sie frei.',
         condition: (data) => LINEUP_GAMES.includes(data?.game),
       },
     },
     {
+      name: 'signupDeadline',
+      label: 'Anmeldeschluss',
+      type: 'date',
+      admin: {
+        description: 'Leer lassen für 2 Stunden vor dem Termin. Wer sich danach anmeldet, landet auf der Warteliste.',
+        date: {
+          pickerAppearance: 'dayAndTime',
+          displayFormat: 'dd.MM.yyyy HH:mm',
+          timeFormat: 'HH:mm',
+        },
+        condition: (data) => Boolean(data?.lineupEnabled),
+      },
+    },
+    {
+      name: 'formation',
+      label: 'Formation',
+      type: 'select',
+      options: formationKeys.map((key) => ({ label: key, value: key })),
+      admin: {
+        description: 'Wird beim Übernehmen eines Vorschlags auf der Aufstellungsseite gesetzt.',
+        condition: (data) => Boolean(data?.lineupEnabled),
+      },
+    },
+    {
+      name: 'lineupPublished',
+      label: 'Aufstellung freigegeben',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Erst nach der Freigabe sehen Spieler die Aufstellung.',
+        condition: (data) => Boolean(data?.lineupEnabled),
+      },
+    },
+    {
+      name: 'signups',
+      label: 'Anmeldungen',
+      type: 'join',
+      collection: 'lineup-signups',
+      on: 'event',
+      defaultSort: 'createdAt',
+      admin: {
+        defaultColumns: ['discordName', 'status', 'afterDeadline', 'attendance'],
+        condition: (data) => Boolean(data?.lineupEnabled),
+      },
+    },
+    {
       name: 'lineup',
-      label: 'Eingetragene Spieler',
+      label: 'Aufstellung',
       type: 'join',
       collection: 'lineup-slots',
       on: 'event',
       admin: {
-        description: 'Zum Austragen einen Eintrag öffnen und löschen.',
+        description: 'Bearbeiten geht am einfachsten auf der Aufstellungsseite des Events.',
         defaultColumns: ['discordName', 'position'],
-        condition: (data) => Boolean(data?.formation),
+        condition: (data) => Boolean(data?.lineupEnabled),
       },
     },
   ],

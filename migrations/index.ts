@@ -4,6 +4,7 @@ import * as migration_20261009_133620_rename_gta_v_to_gta_vi from './20261009_13
 import * as migration_20261013_224242_news from './20261013_224242_news';
 import * as migration_20261014_204712_media_storage_fields from './20261014_204712_media_storage_fields';
 import * as migration_20261018_151039_lineups from './20261018_151039_lineups';
+import * as migration_20261020_132019_signups_and_players from './20261020_132019_signups_and_players';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261018_151039_lineups.up,
     down: migration_20261018_151039_lineups.down,
-    name: '20261018_151039_lineups'
+    name: '20261018_151039_lineups',
+  },
+  {
+    up: migration_20261020_132019_signups_and_players.up,
+    down: migration_20261020_132019_signups_and_players.down,
+    name: '20261020_132019_signups_and_players'
   },
 ];

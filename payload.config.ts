@@ -22,9 +22,11 @@ import { de } from '@payloadcms/translations/languages/de'
 import { buildConfig } from 'payload'
 
 import { Events } from './collections/Events'
+import { LineupSignups } from './collections/LineupSignups'
 import { LineupSlots } from './collections/LineupSlots'
 import { Media } from './collections/Media'
 import { News } from './collections/News'
+import { Players } from './collections/Players'
 import { Users } from './collections/Users'
 import { migrations } from './migrations'
 
@@ -40,7 +42,7 @@ export default buildConfig({
       titleSuffix: '| Westwood Gaming',
     },
   },
-  collections: [Events, LineupSlots, News, Media, Users],
+  collections: [Events, LineupSignups, LineupSlots, Players, News, Media, Users],
   editor: lexicalEditor({
     features: [
       ParagraphFeature(),

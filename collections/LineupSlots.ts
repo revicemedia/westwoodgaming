@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
-// Ein belegter Platz in der Aufstellung eines Events.
-// Die Website schreibt hier nur serverseitig nach Prüfung des Discord-Logins.
+// Ein belegter Platz in der Aufstellung eines Events. Entsteht aus dem Vorschlag, den ein Admin
+// auf der Aufstellungsseite übernimmt und anpasst; Absagen und Nachrücken laufen serverseitig.
 export const LineupSlots: CollectionConfig = {
   slug: 'lineup-slots',
   labels: {

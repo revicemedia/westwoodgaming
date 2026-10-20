@@ -52,10 +52,10 @@ export async function announceEvent(event: Event, logger: Payload['logger']) {
         ],
       }
 
-  // Events mit Aufstellung bekommen den Link zum Eintragen, alle anderen die Abstimmung
-  const lineupUrl = event.formation ? `${siteUrl()}/events/${event.id}/aufstellung` : null
+  // Events mit Aufstellung bekommen den Link zur Anmeldung, alle anderen die Abstimmung
+  const lineupUrl = event.lineupEnabled ? `${siteUrl()}/events/${event.id}/aufstellung` : null
   const extra = lineupUrl
-    ? { content: `**Trag dich auf deine Position ein:** [Zur Aufstellung (${event.formation})](<${lineupUrl}>)` }
+    ? { content: `**Meld dich mit deinen Wunschpositionen an:** [Zur Anmeldung](<${lineupUrl}>)` }
     : {
         poll: {
           question: { text: `${event.title.slice(0, 240)}: ${date}. Bist du dabei?` },

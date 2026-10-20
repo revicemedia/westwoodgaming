@@ -68,7 +68,9 @@ export interface Config {
   blocks: {};
   collections: {
     events: Event;
+    'lineup-signups': LineupSignup;
     'lineup-slots': LineupSlot;
+    players: Player;
     news: News;
     media: Media;
     users: User;
@@ -79,12 +81,15 @@ export interface Config {
   };
   collectionsJoins: {
     events: {
+      signups: 'lineup-signups';
       lineup: 'lineup-slots';
     };
   };
   collectionsSelect: {
     events: EventsSelect<false> | EventsSelect<true>;
+    'lineup-signups': LineupSignupsSelect<false> | LineupSignupsSelect<true>;
     'lineup-slots': LineupSlotsSelect<false> | LineupSlotsSelect<true>;
+    players: PlayersSelect<false> | PlayersSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -141,17 +146,57 @@ export interface Event {
   date?: string | null;
   description: string;
   /**
-   * Optional. Spieler können sich dann über den Aufstellungs-Link mit Discord auf eine Position eintragen.
+   * Spieler melden sich über den Aufstellungs-Link mit Discord an. Nach dem Anmeldeschluss schlägt die Seite Formation und Aufstellung vor, ein Admin gibt sie frei.
+   */
+  lineupEnabled?: boolean | null;
+  /**
+   * Leer lassen für 2 Stunden vor dem Termin. Wer sich danach anmeldet, landet auf der Warteliste.
+   */
+  signupDeadline?: string | null;
+  /**
+   * Wird beim Übernehmen eines Vorschlags auf der Aufstellungsseite gesetzt.
    */
   formation?: ('4-2-3-1' | '3-5-2' | '4-1-2-1-2') | null;
   /**
-   * Zum Austragen einen Eintrag öffnen und löschen.
+   * Erst nach der Freigabe sehen Spieler die Aufstellung.
+   */
+  lineupPublished?: boolean | null;
+  signups?: {
+    docs?: (number | LineupSignup)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Bearbeiten geht am einfachsten auf der Aufstellungsseite des Events.
    */
   lineup?: {
     docs?: (number | LineupSlot)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lineup-signups".
+ */
+export interface LineupSignup {
+  id: number;
+  event: number | Event;
+  discordName: string;
+  discordId: string;
+  discordAvatar?: string | null;
+  status: 'active' | 'cancelled';
+  afterDeadline?: boolean | null;
+  /**
+   * Nach Anmeldeschluss abgesagt. Senkt die Zuverlässigkeit.
+   */
+  cancelledLate?: boolean | null;
+  /**
+   * Nach dem Event vom Admin gesetzt. Fließt in die Zuverlässigkeit ein.
+   */
+  attendance?: ('present' | 'late' | 'no_show') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -166,6 +211,20 @@ export interface LineupSlot {
   discordName: string;
   discordId: string;
   discordAvatar?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "players".
+ */
+export interface Player {
+  id: number;
+  discordId: string;
+  discordName: string;
+  discordAvatar?: string | null;
+  mainPosition: 'TW' | 'LV' | 'IV' | 'RV' | 'ZDM' | 'ZM' | 'LM' | 'RM' | 'ZOM' | 'ST';
+  secondaryPositions: ('TW' | 'LV' | 'IV' | 'RV' | 'ZDM' | 'ZM' | 'LM' | 'RM' | 'ZOM' | 'ST')[];
   updatedAt: string;
   createdAt: string;
 }
@@ -288,8 +347,16 @@ export interface PayloadLockedDocument {
         value: number | Event;
       } | null)
     | ({
+        relationTo: 'lineup-signups';
+        value: number | LineupSignup;
+      } | null)
+    | ({
         relationTo: 'lineup-slots';
         value: number | LineupSlot;
+      } | null)
+    | ({
+        relationTo: 'players';
+        value: number | Player;
       } | null)
     | ({
         relationTo: 'news';
@@ -354,8 +421,28 @@ export interface EventsSelect<T extends boolean = true> {
   game?: T;
   date?: T;
   description?: T;
+  lineupEnabled?: T;
+  signupDeadline?: T;
   formation?: T;
+  lineupPublished?: T;
+  signups?: T;
   lineup?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lineup-signups_select".
+ */
+export interface LineupSignupsSelect<T extends boolean = true> {
+  event?: T;
+  discordName?: T;
+  discordId?: T;
+  discordAvatar?: T;
+  status?: T;
+  afterDeadline?: T;
+  cancelledLate?: T;
+  attendance?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -369,6 +456,19 @@ export interface LineupSlotsSelect<T extends boolean = true> {
   discordName?: T;
   discordId?: T;
   discordAvatar?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "players_select".
+ */
+export interface PlayersSelect<T extends boolean = true> {
+  discordId?: T;
+  discordName?: T;
+  discordAvatar?: T;
+  mainPosition?: T;
+  secondaryPositions?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -4,12 +4,27 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
+import LineupAdmin from "@/components/Lineup/LineupAdmin";
+import PositionsForm from "@/components/Lineup/PositionsForm";
+import SignupButton from "@/components/Lineup/SignupButton";
 import LineupPitch from "@/components/LineupPitch/LineupPitch";
 import { getDiscordUser } from "@/lib/discordAuth";
 import { links } from "@/lib/links";
 import { formatEventDate } from "@/lib/eventDate";
 import { getGame } from "@/lib/games";
-import { getLineupEvent, getLineupEventIds, getLineupSlots } from "@/lib/lineup";
+import {
+  getLineupEvent,
+  getLineupEventIds,
+  getLineupSlots,
+  getPlayerProfile,
+  getProposals,
+  getSignups,
+  hasStarted,
+  isAdmin,
+  isAfterDeadline,
+  signupDeadline,
+  type Signup,
+} from "@/lib/lineup";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -23,7 +38,7 @@ export async function generateStaticParams() {
 
 export const metadata: Metadata = {
   title: "Aufstellung | Westwood Gaming",
-  description: "Trag dich auf deine Position für das nächste Event ein.",
+  description: "Melde dich für das nächste Event an.",
   // nur für die Community über Discord gedacht, nicht für Suchmaschinen
   robots: { index: false, follow: false },
 };
@@ -36,6 +51,34 @@ export default function LineupPage({ params }: Props) {
   );
 }
 
+function PlayerList({ title, players, userId }: { title: string; players: Signup[]; userId: string | null }) {
+  if (players.length === 0) return null;
+  return (
+    <div className="mt-8">
+      <h3 className="text-sm font-semibold text-gray-900">
+        {title} ({players.length})
+      </h3>
+      <ul className="mt-3 divide-y divide-gray-100">
+        {players.map((signup) => (
+          <li key={signup.discordId} className="flex items-center gap-3 py-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={signup.discordAvatar ?? ""} alt="" className="size-8 rounded-full bg-gray-200" />
+            <span className="min-w-0 flex-1 truncate text-sm text-gray-900">
+              {signup.discordName}
+              {signup.discordId === userId && <span className="text-gray-500"> (du)</span>}
+            </span>
+            {signup.main && (
+              <span className="rounded-sm border border-purple px-1 text-xs font-semibold text-purple" title="Hauptposition">
+                {signup.main}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 async function LineupContent({ params }: Props) {
   const { id } = await params;
   // Seite hängt vom eingeloggten Spieler ab und wird immer zur Laufzeit gerendert
@@ -45,15 +88,38 @@ async function LineupContent({ params }: Props) {
 
   const { event, formation } = lineup;
   const game = getGame(event.game);
-  const [user, slots] = await Promise.all([getDiscordUser(), getLineupSlots(event.id)]);
+  const [user, admin, slots, signups] = await Promise.all([
+    getDiscordUser(),
+    isAdmin(),
+    getLineupSlots(event.id),
+    getSignups(event.id),
+  ]);
+  const profile = user ? await getPlayerProfile(user.id) : null;
   const path = `/events/${event.id}/aufstellung`;
-  const mySlot = user ? slots.find((slot) => slot.discordId === user.id) : undefined;
-  // Eingetragene in der Reihenfolge der Aufstellung (Sturm zuerst, Torwart zuletzt)
-  const players = formation.flatMap((position) => {
-    const slot = slots.find((entry) => entry.position === position.key);
-    return slot ? [{ position, slot }] : [];
-  });
-  const free = formation.filter((position) => !slots.some((slot) => slot.position === position.key)).length;
+  const loginUrl = `/api/auth/discord/login?returnTo=${encodeURIComponent(path)}`;
+
+  const published = Boolean(event.lineupPublished && formation);
+  const deadline = signupDeadline(event);
+  const afterDeadline = isAfterDeadline(event);
+  const started = hasStarted(event);
+
+  const active = signups.filter((signup) => signup.status === "active");
+  const mySignup = user ? active.find((signup) => signup.discordId === user.id) : undefined;
+  const reliability = user ? signups.find((signup) => signup.discordId === user.id)?.reliability : undefined;
+  const mySlot = user && published ? slots.find((slot) => slot.discordId === user.id) : undefined;
+  // Vor der Freigabe: pünktliche Anmeldungen und Nachzügler; danach: alle Angemeldeten ohne Platz
+  const onTime = active.filter((signup) => !signup.afterDeadline);
+  const waitlist = published
+    ? active
+        .filter((signup) => !slots.some((slot) => slot.discordId === signup.discordId))
+        .sort((a, b) => Number(a.afterDeadline) - Number(b.afterDeadline))
+    : active.filter((signup) => signup.afterDeadline);
+
+  let status = "Noch nicht angemeldet";
+  if (mySlot) status = `Aufgestellt als ${formation?.find((position) => position.key === mySlot.position)?.label ?? mySlot.position}`;
+  else if (mySignup && published) status = `Auf der Warteliste, Platz ${waitlist.indexOf(mySignup) + 1}`;
+  else if (mySignup?.afterDeadline) status = "Auf der Warteliste";
+  else if (mySignup) status = "Angemeldet";
 
   return (
     <>
@@ -79,21 +145,34 @@ async function LineupContent({ params }: Props) {
       <div className="w-full bg-white pt-12 pb-20">
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-3 lg:px-8">
           <div className="lg:order-2">
-            <h2 className="text-2xl font-semibold text-black">Aufstellung</h2>
-            <p className="mt-1 mb-4 flex items-center gap-2 text-lg font-semibold text-purple">
-              {/* Taktik-Icon aus public/tactics.svg, eingebettet damit es die Textfarbe übernimmt */}
-              <svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" className="size-6">
-                <path d="m650.23-140-41.77-41.77 63-64-63-63 41.77-42.77 64 64 63-64L820-308.77l-64 63 64 64L777.23-140l-63-63-64 63Zm-364.81-74.58Q300-229.15 300-250t-14.58-35.42Q270.85-300 250-300t-35.42 14.58Q200-270.85 200-250t14.58 35.42Q229.15-200 250-200t35.42-14.58ZM250-140q-45.77 0-77.88-32.12Q140-204.23 140-250q0-45.77 32.12-77.88Q204.23-360 250-360q36.23 0 65.19 21.27t39.5 56.27q42.85-7.54 71-40.69 28.16-33.16 28.16-76.85v-154.23q0-78.77 55.61-134.38 55.62-55.62 134.39-55.62h60.61l-73-73L674.23-860 820-714.23 674.23-568.46l-42.77-41.77 72.62-74h-60.23q-54.23 0-92.12 37.88-37.88 37.89-37.88 92.12V-400q0 68-45.27 118.5t-112.66 59.65q-9.3 36.23-38.88 59.04Q287.46-140 250-140Zm-68.23-468.46L140-650.23l63-64-63-63L181.77-820l64 64 63-64 42.77 42.77-64 63 64 64-42.77 41.77-63-63-64 63Z" />
-              </svg>
-              {event.formation}
+            <h2 className="text-2xl font-semibold text-black">Anmeldung</h2>
+            {published && (
+              <p className="mt-1 flex items-center gap-2 text-lg font-semibold text-purple">
+                {/* Taktik-Icon aus public/tactics.svg, eingebettet damit es die Textfarbe übernimmt */}
+                <svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" className="size-6">
+                  <path d="m650.23-140-41.77-41.77 63-64-63-63 41.77-42.77 64 64 63-64L820-308.77l-64 63 64 64L777.23-140l-63-63-64 63Zm-364.81-74.58Q300-229.15 300-250t-14.58-35.42Q270.85-300 250-300t-35.42 14.58Q200-270.85 200-250t14.58 35.42Q229.15-200 250-200t35.42-14.58ZM250-140q-45.77 0-77.88-32.12Q140-204.23 140-250q0-45.77 32.12-77.88Q204.23-360 250-360q36.23 0 65.19 21.27t39.5 56.27q42.85-7.54 71-40.69 28.16-33.16 28.16-76.85v-154.23q0-78.77 55.61-134.38 55.62-55.62 134.39-55.62h60.61l-73-73L674.23-860 820-714.23 674.23-568.46l-42.77-41.77 72.62-74h-60.23q-54.23 0-92.12 37.88-37.88 37.89-37.88 92.12V-400q0 68-45.27 118.5t-112.66 59.65q-9.3 36.23-38.88 59.04Q287.46-140 250-140Zm-68.23-468.46L140-650.23l63-64-63-63L181.77-820l64 64 63-64 42.77 42.77-64 63 64 64-42.77 41.77-63-63-64 63Z" />
+                </svg>
+                {event.formation}
+              </p>
+            )}
+            <p className="mt-4 text-base/7 text-gray-600">
+              Hinterlege deine Haupt- und Nebenpositionen und melde dich an. Nach dem Anmeldeschluss verteilt die Seite die
+              Positionen so, dass möglichst viele auf ihrer Wunschposition spielen. Wollen mehrere dieselbe Position,
+              entscheidet die Zuverlässigkeit. Ein Admin prüft die Aufstellung und gibt sie frei.
             </p>
-            <p className="text-base/7 text-gray-600">
-              Wähle eine freie Position und trag dich ein. Pro Spieler ist ein Platz möglich, über das X an deinem
-              Platz gibst du ihn wieder frei.
-            </p>
-            <p className="mt-4 text-sm font-semibold text-gray-900">
-              {free} von {formation.length} Positionen frei
-            </p>
+            <dl className="mt-4 space-y-1 text-sm">
+              <div className="flex gap-2">
+                <dt className="font-semibold text-gray-900">Anmeldeschluss:</dt>
+                <dd className="text-gray-600">{deadline ? formatEventDate(deadline.toISOString()) : "bis zur Freigabe"}</dd>
+              </div>
+              <div className="flex gap-2">
+                <dt className="font-semibold text-gray-900">Angemeldet:</dt>
+                <dd className="text-gray-600">
+                  {active.length}
+                  {waitlist.length > 0 && `, davon ${waitlist.length} auf der Warteliste`}
+                </dd>
+              </div>
+            </dl>
 
             <div className="mt-8 rounded-md bg-gray-100 p-5">
               {user ? (
@@ -103,41 +182,57 @@ async function LineupContent({ params }: Props) {
                     <img src={user.avatar} alt="" className="size-10 rounded-full" />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-black">{user.name}</p>
-                      <p className="text-sm text-gray-600">
-                        {mySlot
-                          ? `Eingetragen als ${formation.find((position) => position.key === mySlot.position)?.label ?? mySlot.position}`
-                          : "Noch nicht eingetragen"}
-                      </p>
+                      <p className="text-sm text-gray-600">{status}</p>
                     </div>
                   </div>
-                  {!user.member && (
+                  {reliability && (
+                    <p className="mt-3 text-sm text-gray-600" title="Aus Erscheinen, Pünktlichkeit und kurzfristigen Absagen der letzten Events. Nur für dich sichtbar.">
+                      Deine Zuverlässigkeit: <span className="font-semibold text-gray-900">{reliability.percent} %</span>
+                    </p>
+                  )}
+                  {!user.member ? (
                     <p className="mt-4 text-sm text-gray-600">
-                      Eintragen können nur Mitglieder unseres Discord-Servers.{" "}
+                      Anmelden können sich nur Mitglieder unseres Discord-Servers.{" "}
                       <a href={links.discord} target="_blank" className="font-semibold text-purple">
                         Jetzt beitreten
                       </a>{" "}
                       und danach{" "}
-                      <a
-                        href={`/api/auth/discord/login?returnTo=${encodeURIComponent(path)}`}
-                        className="font-semibold text-purple"
-                      >
+                      <a href={loginUrl} className="font-semibold text-purple">
                         erneut anmelden
                       </a>
                       .
                     </p>
+                  ) : (
+                    <>
+                      <div className="mt-4 border-t border-gray-200 pt-4">
+                        <PositionsForm profile={profile} />
+                      </div>
+                      {profile && !started && (
+                        <div className="mt-4">
+                          <SignupButton
+                            eventId={String(event.id)}
+                            signedUp={Boolean(mySignup)}
+                            afterDeadline={afterDeadline}
+                            onWaitlist={Boolean(mySignup?.afterDeadline)}
+                          />
+                          {afterDeadline && !mySignup && (
+                            <p className="mt-2 text-sm text-gray-600">
+                              Der Anmeldeschluss ist vorbei. Du kommst auf die Warteliste und rückst nach, wenn jemand absagt.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
-                  <a
-                    href={`/api/auth/discord/logout?returnTo=${encodeURIComponent(path)}`}
-                    className="mt-4 inline-block text-sm font-semibold text-purple"
-                  >
+                  <a href={`/api/auth/discord/logout?returnTo=${encodeURIComponent(path)}`} className="mt-4 inline-block text-sm font-semibold text-purple">
                     Abmelden
                   </a>
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-gray-600">Melde dich mit Discord an, um dich auf eine Position einzutragen.</p>
+                  <p className="text-sm text-gray-600">Melde dich mit Discord an, um dich für das Event anzumelden.</p>
                   <a
-                    href={`/api/auth/discord/login?returnTo=${encodeURIComponent(path)}`}
+                    href={loginUrl}
                     className="mt-4 flex items-center justify-center gap-2 rounded-md bg-purple px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                   >
                     <svg fill="currentColor" viewBox="0 0 126.644 96" aria-hidden="true" className="size-5">
@@ -149,35 +244,33 @@ async function LineupContent({ params }: Props) {
               )}
             </div>
 
-            {players.length > 0 && (
-              <div className="mt-8">
-                <h3 className="text-sm font-semibold text-gray-900">Eingetragen ({players.length})</h3>
-                <ul className="mt-3 divide-y divide-gray-100">
-                  {players.map(({ position, slot }) => (
-                    <li key={position.key} className="flex items-center gap-3 py-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={slot.discordAvatar ?? ""} alt="" className="size-8 rounded-full bg-gray-200" />
-                      <span className="min-w-0 flex-1 truncate text-sm text-gray-900">
-                        {slot.discordName}
-                        {slot.discordId === user?.id && <span className="text-gray-500"> (du)</span>}
-                      </span>
-                      <span className="rounded-sm border border-purple px-1 text-xs font-semibold text-purple">{position.label}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {!published && <PlayerList title="Angemeldet" players={onTime} userId={user?.id ?? null} />}
+            <PlayerList title="Warteliste" players={waitlist} userId={user?.id ?? null} />
           </div>
 
           <div className="lg:order-1 lg:col-span-2">
-            <LineupPitch
-              eventId={String(event.id)}
-              formation={formation}
-              slots={slots}
-              userId={user?.id ?? null}
-              canJoin={Boolean(user?.member)}
-              loginUrl={`/api/auth/discord/login?returnTo=${encodeURIComponent(path)}`}
-            />
+            {admin ? (
+              <LineupAdmin
+                eventId={String(event.id)}
+                formationKey={event.formation ?? null}
+                formation={formation}
+                slots={slots}
+                signups={signups}
+                proposals={getProposals(signups)}
+                published={published}
+              />
+            ) : published && formation ? (
+              <LineupPitch formation={formation} slots={slots} userId={user?.id ?? null} />
+            ) : (
+              <div className="mx-auto flex aspect-3/4 w-full max-w-xl flex-col items-center justify-center rounded-md bg-gray-900 p-8 text-center">
+                <p className="text-xl font-semibold text-white">Aufstellung folgt</p>
+                <p className="mt-2 max-w-sm text-sm text-white/70">
+                  {afterDeadline
+                    ? "Der Anmeldeschluss ist vorbei. Ein Admin stellt gerade Formation und Aufstellung zusammen."
+                    : "Nach dem Anmeldeschluss stellt ein Admin Formation und Aufstellung aus allen Anmeldungen zusammen."}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
