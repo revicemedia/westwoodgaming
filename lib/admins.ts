@@ -7,8 +7,9 @@ export type Admin = {
 }
 
 export const admins: Admin[] = [
-  { gamertag: 'mfgFaith', role: 'Admin', image: '/Fabian.jpg' },
-  { gamertag: 'Big_LouDE', role: 'Admin', image: '/Luca.jpg' },
+  { gamertag: 'mfgFaith', role: 'Founder', image: '/Fabian.jpg' },
+  { gamertag: 'Big_LouDE', role: 'Founder', image: '/Luca.jpg' },
   { gamertag: 'derBrudi420', role: 'Admin', image: '/Brudinho.jpeg' },
   { gamertag: 'ck87one', role: 'Admin', image: '/CK.jpeg' },
+  { gamertag: 'Vater_Theresa', role: 'Admin', image: '/VaterTheresa.jpg' },
 ]
