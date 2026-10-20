@@ -31,7 +31,8 @@ body {
 
 /* Navbar-Schatten nur auf Seiten ohne Breadcrumbs; dort schließt die graue Leiste direkt an */
 body:not(:has([data-breadcrumbs])) [data-navbar] {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  /* entspricht shadow-xs; als Wert, weil Tailwind ungenutzte Theme-Variablen nicht ausgibt */
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 @layer base {
@@ -116,5 +117,23 @@ body:not(:has([data-breadcrumbs])) [data-navbar] {
   from {
     opacity: 0;
     transform: scale(1.08);
+  }
+}
+
+/* Titelbilder der Unterseiten zoomen beim Scrollen leicht heran. Ohne Unterstützung für
+   scroll-gesteuerte Animationen (z. B. Firefox) bleibt das Bild einfach stehen. */
+@keyframes hero-scroll-zoom {
+  to {
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .hero-scroll-zoom {
+      animation: hero-scroll-zoom linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 60vh;
+    }
   }
 }

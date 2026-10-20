@@ -59,7 +59,7 @@ async function LineupContent({ params }: Props) {
     <>
       <section className="relative isolate overflow-hidden bg-black">
         {game && (
-          <Image alt="" src={game.image} fill sizes="(min-width: 1024px) 100vw, 1200px" preload className="-z-20 object-cover object-top" />
+          <Image alt="" src={game.image} fill sizes="(min-width: 1024px) 100vw, 1200px" preload className="hero-scroll-zoom -z-20 object-cover object-top" />
         )}
         <div aria-hidden="true" className="absolute inset-0 -z-10 bg-linear-to-t from-black via-black/60 to-transparent" />
 

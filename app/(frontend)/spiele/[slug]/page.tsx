@@ -68,7 +68,7 @@ async function GameContent({ params }: Props) {
           fill
           sizes="(min-width: 1024px) 100vw, 1200px"
           preload
-          className="-z-20 object-cover object-top"
+          className="hero-scroll-zoom -z-20 object-cover object-top"
         />
         <div aria-hidden="true" className="absolute inset-0 -z-10 bg-linear-to-t from-black via-black/60 to-transparent" />
 

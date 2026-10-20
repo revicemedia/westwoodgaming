@@ -7,6 +7,8 @@ const features = [
       'Bei uns ist immer etwas los. Ob spontane Runde am Abend oder langer Zock-Marathon am Wochenende: Du findest jederzeit Mitspieler, die Lust auf eine gemeinsame Partie haben.',
     href: '#',
     icon: UserGroupIcon,
+    // Markenfarben, je Kachel eine
+    tile: 'bg-black text-white',
   },
   {
     name: 'Custom Events',
@@ -14,6 +16,7 @@ const features = [
       'Turniere, Themenabende und eigene Spielmodi: Wir stellen regelmäßig Events auf die Beine, die es so nur bei uns gibt. Mitmachen kann jeder, egal ob Neuling oder Veteran.',
     href: '#',
     icon: TrophyIcon,
+    tile: 'bg-lime text-black',
   },
   {
     name: 'Freundschaften',
@@ -21,6 +24,7 @@ const features = [
       'Aus Mitspielern werden Freunde. Bei uns zählt der Spaß am gemeinsamen Spielen mehr als jede Statistik, und viele Bekanntschaften reichen längst über das Spiel hinaus.',
     href: '#',
     icon: HeartIcon,
+    tile: 'bg-purple text-white',
   },
 ]
 
@@ -41,8 +45,8 @@ export default function TopSection() {
             {features.map((feature) => (
               <div key={feature.name} className="flex flex-col">
                 <dt className="text-base/7 font-semibold text-gray-900">
-                  <div className="mb-6 flex size-10 items-center justify-center rounded-md bg-black">
-                    <feature.icon aria-hidden="true" className="size-6 text-white" />
+                  <div className={`mb-6 flex size-10 items-center justify-center rounded-md ${feature.tile}`}>
+                    <feature.icon aria-hidden="true" className="size-6" />
                   </div>
                   {feature.name}
                 </dt>
