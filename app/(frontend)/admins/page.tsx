@@ -15,7 +15,7 @@ export default function AdminsPage() {
       <section className="relative isolate overflow-hidden bg-black">
         <Image
           alt=""
-          src="/BF6.jpg"
+          src="/Admins1.jpg"
           fill
           sizes="(min-width: 1024px) 100vw, 1200px"
           preload
