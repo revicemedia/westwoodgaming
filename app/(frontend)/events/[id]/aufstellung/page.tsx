@@ -9,7 +9,7 @@ import { getDiscordUser } from "@/lib/discordAuth";
 import { links } from "@/lib/links";
 import { formatEventDate } from "@/lib/eventDate";
 import { getGame } from "@/lib/games";
-import { getLineupEvent, getLineupEventIds, getLineupSlots } from "@/lib/lineup";
+import { getLineupEvent, getLineupEventIds, getLineupSlots, getLineupWaitlist, isAdmin } from "@/lib/lineup";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -45,15 +45,25 @@ async function LineupContent({ params }: Props) {
 
   const { event, formation } = lineup;
   const game = getGame(event.game);
-  const [user, slots] = await Promise.all([getDiscordUser(), getLineupSlots(event.id)]);
+  const [user, slots, waitlist, admin] = await Promise.all([
+    getDiscordUser(),
+    getLineupSlots(event.id),
+    getLineupWaitlist(event.id),
+    isAdmin(),
+  ]);
+  const blocked: string[] = event.blockedPositions ?? [];
   const path = `/events/${event.id}/aufstellung`;
   const mySlot = user ? slots.find((slot) => slot.discordId === user.id) : undefined;
+  const myWait = user ? waitlist.find((entry) => entry.discordId === user.id) : undefined;
+  const label = (key: string) => formation.find((position) => position.key === key)?.label ?? key;
   // Eingetragene in der Reihenfolge der Aufstellung (Sturm zuerst, Torwart zuletzt)
   const players = formation.flatMap((position) => {
     const slot = slots.find((entry) => entry.position === position.key);
     return slot ? [{ position, slot }] : [];
   });
-  const free = formation.filter((position) => !slots.some((slot) => slot.position === position.key)).length;
+  const isFree = (key: string) => !slots.some((slot) => slot.position === key);
+  const free = formation.filter((position) => isFree(position.key) && !blocked.includes(position.key)).length;
+  const reserved = formation.filter((position) => isFree(position.key) && blocked.includes(position.key)).length;
 
   return (
     <>
@@ -89,10 +99,13 @@ async function LineupContent({ params }: Props) {
             </p>
             <p className="text-base/7 text-gray-600">
               Wähle eine freie Position und trag dich ein. Pro Spieler ist ein Platz möglich, über das X an deinem
-              Platz gibst du ihn wieder frei.
+              Platz gibst du ihn wieder frei. Ist deine Wunschposition vergeben oder reserviert, klick sie an und setz
+              dich auf die Warteliste.
             </p>
             <p className="mt-4 text-sm font-semibold text-gray-900">
               {free} von {formation.length} Positionen frei
+              {reserved > 0 && `, ${reserved} reserviert`}
+              {waitlist.length > 0 && `, ${waitlist.length} auf der Warteliste`}
             </p>
 
             <div className="mt-8 rounded-md bg-gray-100 p-5">
@@ -105,8 +118,10 @@ async function LineupContent({ params }: Props) {
                       <p className="truncate text-sm font-semibold text-black">{user.name}</p>
                       <p className="text-sm text-gray-600">
                         {mySlot
-                          ? `Eingetragen als ${formation.find((position) => position.key === mySlot.position)?.label ?? mySlot.position}`
-                          : "Noch nicht eingetragen"}
+                          ? `Eingetragen als ${label(mySlot.position)}`
+                          : myWait
+                            ? `Auf der Warteliste (Wunsch: ${label(myWait.position)}, Platz ${waitlist.indexOf(myWait) + 1})`
+                            : "Noch nicht eingetragen"}
                       </p>
                     </div>
                   </div>
@@ -174,8 +189,12 @@ async function LineupContent({ params }: Props) {
               eventId={String(event.id)}
               formation={formation}
               slots={slots}
+              waitlist={waitlist}
+              blocked={blocked}
               userId={user?.id ?? null}
               canJoin={Boolean(user?.member)}
+              isAdmin={admin}
+              exportUrl={`${path}/bild`}
               loginUrl={`/api/auth/discord/login?returnTo=${encodeURIComponent(path)}`}
             />
           </div>

@@ -23,6 +23,7 @@ import { buildConfig } from 'payload'
 
 import { Events } from './collections/Events'
 import { LineupSlots } from './collections/LineupSlots'
+import { LineupWaitlist } from './collections/LineupWaitlist'
 import { Media } from './collections/Media'
 import { News } from './collections/News'
 import { Users } from './collections/Users'
@@ -40,7 +41,7 @@ export default buildConfig({
       titleSuffix: '| Westwood Gaming',
     },
   },
-  collections: [Events, LineupSlots, News, Media, Users],
+  collections: [Events, LineupSlots, LineupWaitlist, News, Media, Users],
   editor: lexicalEditor({
     features: [
       ParagraphFeature(),

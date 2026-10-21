@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { promoteFromWaitlist } from '../lib/waitlist'
+
 // Ein belegter Platz in der Aufstellung eines Events.
 // Die Website schreibt hier nur serverseitig nach Prüfung des Discord-Logins.
 export const LineupSlots: CollectionConfig = {
@@ -18,6 +20,16 @@ export const LineupSlots: CollectionConfig = {
     create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
+  },
+  hooks: {
+    // Wird ein Platz frei (Austragen, Wechsel, Löschen im Admin), rückt jemand von der Warteliste nach
+    afterDelete: [
+      async ({ doc, req, context }) => {
+        if (context.skipPromotion) return
+        const eventId = typeof doc.event === 'object' ? doc.event?.id : doc.event
+        if (eventId) await promoteFromWaitlist(req.payload, eventId, doc.position, req)
+      },
+    ],
   },
   // Pro Event ist jede Position nur einmal vergeben und jeder Spieler nur einmal eingetragen
   indexes: [

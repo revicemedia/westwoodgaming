@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     events: Event;
     'lineup-slots': LineupSlot;
+    'lineup-waitlist': LineupWaitlist;
     news: News;
     media: Media;
     users: User;
@@ -80,11 +81,13 @@ export interface Config {
   collectionsJoins: {
     events: {
       lineup: 'lineup-slots';
+      waitlist: 'lineup-waitlist';
     };
   };
   collectionsSelect: {
     events: EventsSelect<false> | EventsSelect<true>;
     'lineup-slots': LineupSlotsSelect<false> | LineupSlotsSelect<true>;
+    'lineup-waitlist': LineupWaitlistSelect<false> | LineupWaitlistSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -145,10 +148,42 @@ export interface Event {
    */
   formation?: ('4-2-3-1' | '3-5-2' | '4-1-2-1-2') | null;
   /**
+   * Für die Session reserviert, niemand kann sich darauf eintragen. Zum Freigeben entfernen; dann rückt der Erste von der Warteliste nach. Geht auch per Schloss auf der Aufstellungsseite.
+   */
+  blockedPositions?:
+    | (
+        | 'ST'
+        | 'LM'
+        | 'ZOM'
+        | 'RM'
+        | 'LZDM'
+        | 'RZDM'
+        | 'LV'
+        | 'LIV'
+        | 'RIV'
+        | 'RV'
+        | 'TW'
+        | 'LS'
+        | 'RS'
+        | 'IV'
+        | 'LZM'
+        | 'RZM'
+        | 'ZDM'
+      )[]
+    | null;
+  /**
    * Zum Austragen einen Eintrag öffnen und löschen.
    */
   lineup?: {
     docs?: (number | LineupSlot)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Wird eine Wunschposition frei, rückt der Erste mit diesem Wunsch automatisch nach.
+   */
+  waitlist?: {
+    docs?: (number | LineupWaitlist)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -160,6 +195,20 @@ export interface Event {
  * via the `definition` "lineup-slots".
  */
 export interface LineupSlot {
+  id: number;
+  event: number | Event;
+  position: string;
+  discordName: string;
+  discordId: string;
+  discordAvatar?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lineup-waitlist".
+ */
+export interface LineupWaitlist {
   id: number;
   event: number | Event;
   position: string;
@@ -292,6 +341,10 @@ export interface PayloadLockedDocument {
         value: number | LineupSlot;
       } | null)
     | ({
+        relationTo: 'lineup-waitlist';
+        value: number | LineupWaitlist;
+      } | null)
+    | ({
         relationTo: 'news';
         value: number | News;
       } | null)
@@ -355,7 +408,9 @@ export interface EventsSelect<T extends boolean = true> {
   date?: T;
   description?: T;
   formation?: T;
+  blockedPositions?: T;
   lineup?: T;
+  waitlist?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -364,6 +419,19 @@ export interface EventsSelect<T extends boolean = true> {
  * via the `definition` "lineup-slots_select".
  */
 export interface LineupSlotsSelect<T extends boolean = true> {
+  event?: T;
+  position?: T;
+  discordName?: T;
+  discordId?: T;
+  discordAvatar?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lineup-waitlist_select".
+ */
+export interface LineupWaitlistSelect<T extends boolean = true> {
   event?: T;
   position?: T;
   discordName?: T;

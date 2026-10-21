@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
 import AdminCard from "@/components/AdminCard/AdminCard";
 import { admins } from "@/lib/admins";
@@ -9,18 +9,35 @@ export const metadata: Metadata = {
   description: "Das Admin-Team hinter der Community von Westwood Gaming.",
 };
 
+// Unterhalb von lg ist der Bereich fast quadratisch; dort zeigt das 16:9-Bild mehr von den Personen als das Panorama
+function heroImage() {
+  const common = { alt: "", fill: true, sizes: "100vw" };
+  const {
+    props: { srcSet: wide },
+  } = getImageProps({ ...common, src: "/Admins1.jpg" });
+  const {
+    props: { srcSet: narrow, ...rest },
+  } = getImageProps({ ...common, src: "/Admins.jpg" });
+  return { wide, narrow, rest };
+}
+
 export default function AdminsPage() {
+  const hero = heroImage();
+
   return (
     <>
       <section className="relative isolate overflow-hidden bg-black">
-        <Image
-          alt=""
-          src="/Admins1.jpg"
-          fill
-          sizes="(min-width: 1024px) 100vw, 1200px"
-          preload
-          className="hero-scroll-zoom -z-20 object-cover object-top"
-        />
+        <picture>
+          <source media="(min-width: 1024px)" srcSet={hero.wide} />
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- alt="" kommt über rest */}
+          <img
+            {...hero.rest}
+            srcSet={hero.narrow}
+            loading="eager"
+            fetchPriority="high"
+            className="hero-scroll-zoom -z-20 object-cover object-top"
+          />
+        </picture>
         <div aria-hidden="true" className="absolute inset-0 -z-10 bg-linear-to-t from-black via-black/60 to-transparent" />
 
         <div className="mx-auto flex min-h-80 max-w-7xl items-end px-6 pt-24 pb-10 sm:min-h-96 lg:min-h-[min(30vw,55svh)] lg:px-8">

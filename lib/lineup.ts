@@ -1,5 +1,7 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
+import { admins } from '@/lib/admins'
+import { getDiscordUser } from '@/lib/discordAuth'
 import { getFormation } from '@/lib/formations'
 
 export type LineupSlot = { position: string; discordId: string; discordName: string; discordAvatar: string | null }
@@ -34,6 +36,32 @@ export async function getLineupSlots(eventId: number): Promise<LineupSlot[]> {
     discordName: slot.discordName,
     discordAvatar: slot.discordAvatar ?? null,
   }))
+}
+
+// Warteliste in Wartereihenfolge; position ist hier die Wunschposition
+export async function getLineupWaitlist(eventId: number): Promise<LineupSlot[]> {
+  const payload = await getPayload({ config })
+  const { docs } = await payload.find({
+    collection: 'lineup-waitlist',
+    where: { event: { equals: eventId } },
+    sort: 'createdAt',
+    pagination: false,
+    depth: 0,
+    overrideAccess: true,
+  })
+
+  return docs.map((entry) => ({
+    position: entry.position,
+    discordId: entry.discordId,
+    discordName: entry.discordName,
+    discordAvatar: entry.discordAvatar ?? null,
+  }))
+}
+
+// Darf der mit Discord angemeldete Spieler die Aufstellung verwalten? Freigeschaltet über lineupAdmin in lib/admins.ts
+export async function isAdmin() {
+  const user = await getDiscordUser()
+  return Boolean(user && admins.some((admin) => admin.lineupAdmin && admin.discordId === user.id))
 }
 
 // IDs aller Events mit Aufstellung, zum Vorbereiten der Seiten beim Build

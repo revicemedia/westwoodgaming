@@ -6,10 +6,12 @@ export type Admin = {
   image?: string
   // Discord-Benutzer-ID (Rechtsklick aufs Profil → „Benutzer-ID kopieren“); zeigt das Icon mit Link zum Profil
   discordId?: string
+  // darf über den Discord-Login auf Aufstellungsseiten Positionen sperren und freigeben
+  lineupAdmin?: boolean
 }
 
 export const admins: Admin[] = [
-  { gamertag: 'mfgFaith', role: 'Founder', image: '/Fabian.jpg', discordId: '580511567179808808' },
+  { gamertag: 'mfgFaith', role: 'Founder', image: '/Fabian.jpg', discordId: '580511567179808808', lineupAdmin: true },
   { gamertag: 'Big_LouDE', role: 'Founder', image: '/Luca.jpg', discordId: '365595969259044864' },
   { gamertag: 'derBrudi420', role: 'Admin', image: '/Brudinho.jpeg', discordId: '517716493580894248' },
   { gamertag: 'ck87one', role: 'Admin', image: '/CK.jpeg', discordId: '1311812077937102949' },
