@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { promoteFromWaitlist } from '../lib/waitlist'
+import { promoteFromWaitlist, promoteSignupWaitlist } from '../lib/waitlist'
 
 // Ein belegter Platz in der Aufstellung eines Events.
 // Die Website schreibt hier nur serverseitig nach Prüfung des Discord-Logins.
@@ -27,7 +27,13 @@ export const LineupSlots: CollectionConfig = {
       async ({ doc, req, context }) => {
         if (context.skipPromotion) return
         const eventId = typeof doc.event === 'object' ? doc.event?.id : doc.event
-        if (eventId) await promoteFromWaitlist(req.payload, eventId, doc.position, req)
+        if (!eventId) return
+        // Formation: Wartende mit genau diesem Wunsch; Squads/Liste: der Nächste auf der Warteliste
+        if (doc.position.startsWith('squad-') || doc.position.startsWith('player-')) {
+          await promoteSignupWaitlist(req.payload, eventId, req)
+        } else {
+          await promoteFromWaitlist(req.payload, eventId, doc.position, req)
+        }
       },
     ],
   },

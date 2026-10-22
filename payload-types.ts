@@ -144,6 +144,34 @@ export interface Event {
   date?: string | null;
   description: string;
   /**
+   * Optional. Spieler melden sich dann über den Anmelde-Link mit Discord an. Squads: Battlefield, je 4 Spieler. Custom Match / Open Lobby: Call of Duty, Teilnehmerliste.
+   */
+  signupMode?: ('squads' | 'cod-custom' | 'cod-lobby') | null;
+  /**
+   * Leer = unbegrenzt. Sind alle Squads voll, kommen weitere Spieler auf die Warteliste.
+   */
+  maxSquads?: number | null;
+  /**
+   * Leer = unbegrenzt. Ist die Liste voll, kommen weitere Spieler auf die Warteliste.
+   */
+  maxPlayers?: number | null;
+  /**
+   * Zufällig gemischte Teams. Werden auf der Anmeldeseite per „Teams mischen“ neu ausgelost.
+   */
+  teams?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Wird auf der Anmeldeseite per Schloss gesetzt und freigegeben. Reservierte Plätze zählen als belegt.
+   */
+  reservedSlots?: string[] | null;
+  /**
    * Optional. Spieler können sich dann über den Aufstellungs-Link mit Discord auf eine Position eintragen.
    */
   formation?: ('4-2-3-1' | '3-5-2' | '4-1-2-1-2') | null;
@@ -180,7 +208,7 @@ export interface Event {
     totalDocs?: number;
   };
   /**
-   * Wird eine Wunschposition frei, rückt der Erste mit diesem Wunsch automatisch nach.
+   * Wird ein Platz frei, rückt der Erste (bei Formationen: mit diesem Wunsch) automatisch nach.
    */
   waitlist?: {
     docs?: (number | LineupWaitlist)[];
@@ -407,6 +435,11 @@ export interface EventsSelect<T extends boolean = true> {
   game?: T;
   date?: T;
   description?: T;
+  signupMode?: T;
+  maxSquads?: T;
+  maxPlayers?: T;
+  teams?: T;
+  reservedSlots?: T;
   formation?: T;
   blockedPositions?: T;
   lineup?: T;

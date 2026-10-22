@@ -5,6 +5,9 @@ import * as migration_20261013_224242_news from './20261013_224242_news';
 import * as migration_20261014_204712_media_storage_fields from './20261014_204712_media_storage_fields';
 import * as migration_20261018_151039_lineups from './20261018_151039_lineups';
 import * as migration_20261021_084141_waitlist_and_blocked_positions from './20261021_084141_waitlist_and_blocked_positions';
+import * as migration_20261022_222101_signup_mode from './20261022_222101_signup_mode';
+import * as migration_20261022_223701_signup_capacity_and_reservations from './20261022_223701_signup_capacity_and_reservations';
+import * as migration_20261022_224131_custom_teams from './20261022_224131_custom_teams';
 
 export const migrations = [
   {
@@ -40,6 +43,21 @@ export const migrations = [
   {
     up: migration_20261021_084141_waitlist_and_blocked_positions.up,
     down: migration_20261021_084141_waitlist_and_blocked_positions.down,
-    name: '20261021_084141_waitlist_and_blocked_positions'
+    name: '20261021_084141_waitlist_and_blocked_positions',
+  },
+  {
+    up: migration_20261022_222101_signup_mode.up,
+    down: migration_20261022_222101_signup_mode.down,
+    name: '20261022_222101_signup_mode',
+  },
+  {
+    up: migration_20261022_223701_signup_capacity_and_reservations.up,
+    down: migration_20261022_223701_signup_capacity_and_reservations.down,
+    name: '20261022_223701_signup_capacity_and_reservations',
+  },
+  {
+    up: migration_20261022_224131_custom_teams.up,
+    down: migration_20261022_224131_custom_teams.down,
+    name: '20261022_224131_custom_teams'
   },
 ];

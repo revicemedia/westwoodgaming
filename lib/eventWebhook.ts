@@ -3,6 +3,7 @@ import type { Payload } from 'payload'
 import type { Event } from '../payload-types'
 import { formatEventDate } from './eventDate'
 import { getGame } from './games'
+import { getSignupMode, signupModes } from './signupModes'
 
 // Ein Webhook pro Spiel, z. B. DISCORD_EVENTS_WEBHOOK_EA_FC_27
 export function eventWebhookEnv(game: string) {
@@ -53,9 +54,15 @@ export async function announceEvent(event: Event, logger: Payload['logger']) {
       }
 
   // Events mit Aufstellung bekommen den Link zum Eintragen, alle anderen die Abstimmung
-  const lineupUrl = event.formation ? `${siteUrl()}/events/${event.id}/aufstellung` : null
+  const mode = getSignupMode(event.game, event.signupMode)
+  const lineupUrl = event.formation || mode ? `${siteUrl()}/events/${event.id}/aufstellung` : null
+  const lineupText = event.formation
+    ? `**Trag dich auf deine Position ein:** [Zur Aufstellung (${event.formation})](<${lineupUrl}>)`
+    : mode === 'squads'
+      ? `**Trag dich in einen Squad ein:** [Zu den Squads](<${lineupUrl}>)`
+      : `**Bist du dabei?** [Zur Anmeldung (${mode ? signupModes[mode].label : ''})](<${lineupUrl}>)`
   const extra = lineupUrl
-    ? { content: `**Trag dich auf deine Position ein:** [Zur Aufstellung (${event.formation})](<${lineupUrl}>)` }
+    ? { content: lineupText }
     : {
         poll: {
           question: { text: `${event.title.slice(0, 240)}: ${date}. Bist du dabei?` },

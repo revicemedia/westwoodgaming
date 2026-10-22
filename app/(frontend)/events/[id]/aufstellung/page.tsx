@@ -4,12 +4,15 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
+import SignupList from "@/components/Lineup/SignupList";
+import SquadBoard from "@/components/Lineup/SquadBoard";
 import LineupPitch from "@/components/LineupPitch/LineupPitch";
 import { getDiscordUser } from "@/lib/discordAuth";
 import { links } from "@/lib/links";
 import { formatEventDate } from "@/lib/eventDate";
 import { getGame } from "@/lib/games";
-import { getLineupEvent, getLineupEventIds, getLineupSlots, getLineupWaitlist, isAdmin } from "@/lib/lineup";
+import { getLineupEventIds, getLineupSlots, getLineupWaitlist, getSignupEvent, isAdmin } from "@/lib/lineup";
+import { canOpenSquad, groupSquads, listCapacity, parseTeams, signupModes, SQUAD_SIZE } from "@/lib/signupModes";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -23,7 +26,7 @@ export async function generateStaticParams() {
 
 export const metadata: Metadata = {
   title: "Aufstellung | Westwood Gaming",
-  description: "Trag dich auf deine Position für das nächste Event ein.",
+  description: "Melde dich für das nächste Event an.",
   // nur für die Community über Discord gedacht, nicht für Suchmaschinen
   robots: { index: false, follow: false },
 };
@@ -40,10 +43,12 @@ async function LineupContent({ params }: Props) {
   const { id } = await params;
   // Seite hängt vom eingeloggten Spieler ab und wird immer zur Laufzeit gerendert
   await connection();
-  const lineup = await getLineupEvent(id);
-  if (!lineup) notFound();
+  const signup = await getSignupEvent(id);
+  if (!signup) notFound();
 
-  const { event, formation } = lineup;
+  const { event, mode } = signup;
+  // EA FC: Formation; Battlefield/COD: leere Formation, die Ansicht kommt aus dem Anmeldetyp
+  const formation = signup.formation ?? [];
   const game = getGame(event.game);
   const [user, slots, waitlist, admin] = await Promise.all([
     getDiscordUser(),
@@ -64,6 +69,23 @@ async function LineupContent({ params }: Props) {
   const isFree = (key: string) => !slots.some((slot) => slot.position === key);
   const free = formation.filter((position) => isFree(position.key) && !blocked.includes(position.key)).length;
   const reserved = formation.filter((position) => isFree(position.key) && blocked.includes(position.key)).length;
+  const reservedSlots: string[] = event.reservedSlots ?? [];
+  const squads = mode === "squads" ? groupSquads(slots, reservedSlots) : [];
+  const capacity = listCapacity(event.maxPlayers, reservedSlots, slots.length);
+  const mySquad = squads.find((squad) => squad.members.some((member) => member.discordId === user?.id));
+  const loginUrl = `/api/auth/discord/login?returnTo=${encodeURIComponent(path)}`;
+
+  let status = mySlot ? `Eingetragen als ${label(mySlot.position)}` : myWait
+    ? `Auf der Warteliste (Wunsch: ${label(myWait.position)}, Platz ${waitlist.indexOf(myWait) + 1})`
+    : "Noch nicht eingetragen";
+  if (mode === "squads") {
+    status = mySquad
+      ? `In Squad ${mySquad.number}${mySquad.members[0]?.discordId === user?.id ? " (Squad-Leader)" : ""}`
+      : "Noch in keinem Squad";
+  } else if (mode !== "formation") {
+    status = mySlot ? "Du bist dabei" : "Noch nicht angemeldet";
+  }
+  if (mode !== "formation" && !mySlot && myWait) status = `Auf der Warteliste, Platz ${waitlist.indexOf(myWait) + 1}`;
 
   return (
     <>
@@ -84,29 +106,53 @@ async function LineupContent({ params }: Props) {
         </div>
       </section>
 
-      <Breadcrumbs items={[{ name: "Start", href: "/" }, { name: "Events", href: "/events" }, { name: "Aufstellung" }]} />
+      <Breadcrumbs items={[{ name: "Start", href: "/" }, { name: "Events", href: "/events" }, { name: mode === "formation" ? "Aufstellung" : "Anmeldung" }]} />
 
       <div className="w-full bg-white pt-12 pb-20">
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-3 lg:px-8">
           <div className="lg:order-2">
-            <h2 className="text-2xl font-semibold text-black">Aufstellung</h2>
-            <p className="mt-1 mb-4 flex items-center gap-2 text-lg font-semibold text-purple">
-              {/* Taktik-Icon aus public/tactics.svg, eingebettet damit es die Textfarbe übernimmt */}
-              <svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" className="size-6">
-                <path d="m650.23-140-41.77-41.77 63-64-63-63 41.77-42.77 64 64 63-64L820-308.77l-64 63 64 64L777.23-140l-63-63-64 63Zm-364.81-74.58Q300-229.15 300-250t-14.58-35.42Q270.85-300 250-300t-35.42 14.58Q200-270.85 200-250t14.58 35.42Q229.15-200 250-200t35.42-14.58ZM250-140q-45.77 0-77.88-32.12Q140-204.23 140-250q0-45.77 32.12-77.88Q204.23-360 250-360q36.23 0 65.19 21.27t39.5 56.27q42.85-7.54 71-40.69 28.16-33.16 28.16-76.85v-154.23q0-78.77 55.61-134.38 55.62-55.62 134.39-55.62h60.61l-73-73L674.23-860 820-714.23 674.23-568.46l-42.77-41.77 72.62-74h-60.23q-54.23 0-92.12 37.88-37.88 37.89-37.88 92.12V-400q0 68-45.27 118.5t-112.66 59.65q-9.3 36.23-38.88 59.04Q287.46-140 250-140Zm-68.23-468.46L140-650.23l63-64-63-63L181.77-820l64 64 63-64 42.77 42.77-64 63 64 64-42.77 41.77-63-63-64 63Z" />
-              </svg>
-              {event.formation}
-            </p>
-            <p className="text-base/7 text-gray-600">
-              Wähle eine freie Position und trag dich ein. Pro Spieler ist ein Platz möglich, über das X an deinem
-              Platz gibst du ihn wieder frei. Ist deine Wunschposition vergeben oder reserviert, klick sie an und setz
-              dich auf die Warteliste.
-            </p>
-            <p className="mt-4 text-sm font-semibold text-gray-900">
-              {free} von {formation.length} Positionen frei
-              {reserved > 0 && `, ${reserved} reserviert`}
-              {waitlist.length > 0 && `, ${waitlist.length} auf der Warteliste`}
-            </p>
+            {mode === "formation" ? (
+              <>
+                <h2 className="text-2xl font-semibold text-black">Aufstellung</h2>
+                <p className="mt-1 mb-4 flex items-center gap-2 text-lg font-semibold text-purple">
+                  {/* Taktik-Icon aus public/tactics.svg, eingebettet damit es die Textfarbe übernimmt */}
+                  <svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" className="size-6">
+                    <path d="m650.23-140-41.77-41.77 63-64-63-63 41.77-42.77 64 64 63-64L820-308.77l-64 63 64 64L777.23-140l-63-63-64 63Zm-364.81-74.58Q300-229.15 300-250t-14.58-35.42Q270.85-300 250-300t-35.42 14.58Q200-270.85 200-250t14.58 35.42Q229.15-200 250-200t35.42-14.58ZM250-140q-45.77 0-77.88-32.12Q140-204.23 140-250q0-45.77 32.12-77.88Q204.23-360 250-360q36.23 0 65.19 21.27t39.5 56.27q42.85-7.54 71-40.69 28.16-33.16 28.16-76.85v-154.23q0-78.77 55.61-134.38 55.62-55.62 134.39-55.62h60.61l-73-73L674.23-860 820-714.23 674.23-568.46l-42.77-41.77 72.62-74h-60.23q-54.23 0-92.12 37.88-37.88 37.89-37.88 92.12V-400q0 68-45.27 118.5t-112.66 59.65q-9.3 36.23-38.88 59.04Q287.46-140 250-140Zm-68.23-468.46L140-650.23l63-64-63-63L181.77-820l64 64 63-64 42.77 42.77-64 63 64 64-42.77 41.77-63-63-64 63Z" />
+                  </svg>
+                  {event.formation}
+                </p>
+                <p className="text-base/7 text-gray-600">
+                  Wähle eine freie Position und trag dich ein. Pro Spieler ist ein Platz möglich, über das X an deinem
+                  Platz gibst du ihn wieder frei. Ist deine Wunschposition vergeben oder reserviert, klick sie an und setz
+                  dich auf die Warteliste.
+                </p>
+                <p className="mt-4 text-sm font-semibold text-gray-900">
+                  {free} von {formation.length} Positionen frei
+                  {reserved > 0 && `, ${reserved} reserviert`}
+                  {waitlist.length > 0 && `, ${waitlist.length} auf der Warteliste`}
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-semibold text-black">Anmeldung</h2>
+                <p className="mt-1 mb-4 text-lg font-semibold text-purple">{signupModes[mode].label}</p>
+                <p className="text-base/7 text-gray-600">
+                  {mode === "squads"
+                    ? `Trag dich in einen Squad ein. Ein Squad hat ${SQUAD_SIZE} Plätze, wer sich zuerst einträgt, ist Squad-Leader. Ein neuer Squad öffnet, sobald alle bestehenden voll sind.`
+                    : mode === "cod-custom"
+                      ? "Melde dich für das Custom Match an. Die Teams werden aus allen Zusagen ausgelost und können zwischen den Runden neu gemischt werden. Baupläne geben wir separat bekannt."
+                      : "Melde dich an, wenn du mit in die öffentlichen Lobbys willst. Die Gruppen stellen wir vor dem Start zusammen."}
+                </p>
+                <p className="mt-4 text-sm font-semibold text-gray-900">
+                  {mode === "squads"
+                    ? `${slots.length} Spieler in ${squads.length} ${squads.length === 1 ? "Squad" : "Squads"}${event.maxSquads ? ` (max. ${event.maxSquads})` : ""}`
+                    : event.maxPlayers
+                      ? `${slots.length + reservedSlots.length} von ${event.maxPlayers} Plätzen belegt`
+                      : `${slots.length} Spieler dabei`}
+                  {waitlist.length > 0 && `, ${waitlist.length} auf der Warteliste`}
+                </p>
+              </>
+            )}
 
             <div className="mt-8 rounded-md bg-gray-100 p-5">
               {user ? (
@@ -116,13 +162,7 @@ async function LineupContent({ params }: Props) {
                     <img src={user.avatar} alt="" className="size-10 rounded-full" />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-black">{user.name}</p>
-                      <p className="text-sm text-gray-600">
-                        {mySlot
-                          ? `Eingetragen als ${label(mySlot.position)}`
-                          : myWait
-                            ? `Auf der Warteliste (Wunsch: ${label(myWait.position)}, Platz ${waitlist.indexOf(myWait) + 1})`
-                            : "Noch nicht eingetragen"}
-                      </p>
+                      <p className="text-sm text-gray-600">{status}</p>
                     </div>
                   </div>
                   {!user.member && (
@@ -132,10 +172,7 @@ async function LineupContent({ params }: Props) {
                         Jetzt beitreten
                       </a>{" "}
                       und danach{" "}
-                      <a
-                        href={`/api/auth/discord/login?returnTo=${encodeURIComponent(path)}`}
-                        className="font-semibold text-purple"
-                      >
+                      <a href={loginUrl} className="font-semibold text-purple">
                         erneut anmelden
                       </a>
                       .
@@ -150,9 +187,9 @@ async function LineupContent({ params }: Props) {
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-gray-600">Melde dich mit Discord an, um dich auf eine Position einzutragen.</p>
+                  <p className="text-sm text-gray-600">Melde dich mit Discord an, um dich einzutragen.</p>
                   <a
-                    href={`/api/auth/discord/login?returnTo=${encodeURIComponent(path)}`}
+                    href={loginUrl}
                     className="mt-4 flex items-center justify-center gap-2 rounded-md bg-purple px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                   >
                     <svg fill="currentColor" viewBox="0 0 126.644 96" aria-hidden="true" className="size-5">
@@ -164,7 +201,7 @@ async function LineupContent({ params }: Props) {
               )}
             </div>
 
-            {players.length > 0 && (
+            {mode === "formation" && players.length > 0 && (
               <div className="mt-8">
                 <h3 className="text-sm font-semibold text-gray-900">Eingetragen ({players.length})</h3>
                 <ul className="mt-3 divide-y divide-gray-100">
@@ -185,18 +222,50 @@ async function LineupContent({ params }: Props) {
           </div>
 
           <div className="lg:order-1 lg:col-span-2">
-            <LineupPitch
-              eventId={String(event.id)}
-              formation={formation}
-              slots={slots}
-              waitlist={waitlist}
-              blocked={blocked}
-              userId={user?.id ?? null}
-              canJoin={Boolean(user?.member)}
-              isAdmin={admin}
-              exportUrl={`${path}/bild`}
-              loginUrl={`/api/auth/discord/login?returnTo=${encodeURIComponent(path)}`}
-            />
+            {mode === "squads" ? (
+              <SquadBoard
+                eventId={String(event.id)}
+                squads={squads}
+                canOpen={canOpenSquad(squads, event.maxSquads)}
+                maxSquads={event.maxSquads ?? null}
+                waitlist={waitlist}
+                userId={user?.id ?? null}
+                canJoin={Boolean(user?.member)}
+                isAdmin={admin}
+                loginUrl={loginUrl}
+                exportUrl={`${path}/bild`}
+              />
+            ) : mode !== "formation" ? (
+              <SignupList
+                eventId={String(event.id)}
+                title={signupModes[mode].label}
+                players={slots}
+                reserved={reservedSlots}
+                maxPlayers={event.maxPlayers ?? null}
+                capacity={capacity}
+                canShuffle={mode === "cod-custom"}
+                teams={mode === "cod-custom" ? parseTeams(event.teams) : null}
+                waitlist={waitlist}
+                userId={user?.id ?? null}
+                canJoin={Boolean(user?.member)}
+                isAdmin={admin}
+                loginUrl={loginUrl}
+                exportUrl={`${path}/bild`}
+              />
+            ) : (
+              <LineupPitch
+                eventId={String(event.id)}
+                formation={formation}
+                slots={slots}
+                waitlist={waitlist}
+                blocked={blocked}
+                userId={user?.id ?? null}
+                canJoin={Boolean(user?.member)}
+                isAdmin={admin}
+                exportUrl={`${path}/bild`}
+                loginUrl={loginUrl}
+              />
+            )}
           </div>
         </div>
       </div>

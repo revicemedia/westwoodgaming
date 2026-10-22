@@ -3,8 +3,15 @@ import { getPayload } from 'payload'
 import { admins } from '@/lib/admins'
 import { getDiscordUser } from '@/lib/discordAuth'
 import { getFormation } from '@/lib/formations'
+import { getSignupMode } from '@/lib/signupModes'
 
-export type LineupSlot = { position: string; discordId: string; discordName: string; discordAvatar: string | null }
+export type LineupSlot = {
+  position: string
+  discordId: string
+  discordName: string
+  discordAvatar: string | null
+  createdAt: string
+}
 
 // Event mit Aufstellung laden; null, wenn es keins gibt oder keine Aufstellung gewählt ist
 export async function getLineupEvent(id: string) {
@@ -20,11 +27,30 @@ export async function getLineupEvent(id: string) {
   }
 }
 
+export type SignupEvent = Awaited<ReturnType<typeof getSignupEvent>>
+
+// Event mit beliebiger Anmeldung: Formation (EA FC) oder Anmeldetyp (Squads, Custom Match, Open Lobby)
+export async function getSignupEvent(id: string) {
+  if (!/^\d+$/.test(id)) return null
+  const payload = await getPayload({ config })
+
+  try {
+    const event = await payload.findByID({ collection: 'events', id: Number(id), depth: 0 })
+    const formation = getFormation(event.formation)
+    if (formation) return { event, mode: 'formation' as const, formation }
+    const mode = getSignupMode(event.game, event.signupMode)
+    return mode ? { event, mode, formation: null } : null
+  } catch {
+    return null
+  }
+}
+
 export async function getLineupSlots(eventId: number): Promise<LineupSlot[]> {
   const payload = await getPayload({ config })
   const { docs } = await payload.find({
     collection: 'lineup-slots',
     where: { event: { equals: eventId } },
+    sort: 'createdAt',
     pagination: false,
     depth: 0,
     overrideAccess: true,
@@ -35,6 +61,7 @@ export async function getLineupSlots(eventId: number): Promise<LineupSlot[]> {
     discordId: slot.discordId,
     discordName: slot.discordName,
     discordAvatar: slot.discordAvatar ?? null,
+    createdAt: slot.createdAt,
   }))
 }
 
@@ -55,6 +82,7 @@ export async function getLineupWaitlist(eventId: number): Promise<LineupSlot[]> 
     discordId: entry.discordId,
     discordName: entry.discordName,
     discordAvatar: entry.discordAvatar ?? null,
+    createdAt: entry.createdAt,
   }))
 }
 
@@ -64,13 +92,13 @@ export async function isAdmin() {
   return Boolean(user && admins.some((admin) => admin.lineupAdmin && admin.discordId === user.id))
 }
 
-// IDs aller Events mit Aufstellung, zum Vorbereiten der Seiten beim Build
+// IDs aller Events mit Aufstellung oder Anmeldetyp, zum Vorbereiten der Seiten beim Build
 export async function getLineupEventIds(): Promise<string[]> {
   try {
     const payload = await getPayload({ config })
     const { docs } = await payload.find({
       collection: 'events',
-      where: { formation: { exists: true } },
+      where: { or: [{ formation: { exists: true } }, { signupMode: { exists: true } }] },
       pagination: false,
       depth: 0,
       select: {},

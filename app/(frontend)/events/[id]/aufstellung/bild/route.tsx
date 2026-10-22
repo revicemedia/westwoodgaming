@@ -4,7 +4,8 @@ import { ImageResponse } from 'next/og'
 import { connection } from 'next/server'
 import { formatEventDate } from '@/lib/eventDate'
 import { getGame } from '@/lib/games'
-import { getLineupEvent, getLineupSlots, getLineupWaitlist } from '@/lib/lineup'
+import { getLineupSlots, getLineupWaitlist, getSignupEvent, type LineupSlot } from '@/lib/lineup'
+import { groupSquads, parseTeams, signupModes, SQUAD_SIZE } from '@/lib/signupModes'
 
 // Aufstellung als Bild (PNG, 1080 × 1350) zum Teilen im Discord
 
@@ -68,10 +69,11 @@ async function publicImage(path: string) {
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   await connection()
   const { id } = await params
-  const lineup = await getLineupEvent(id)
-  if (!lineup) return new Response('Dieses Event hat keine Aufstellung.', { status: 404 })
+  const signup = await getSignupEvent(id)
+  if (!signup) return new Response('Für dieses Event gibt es keine Anmeldung.', { status: 404 })
 
-  const { event, formation } = lineup
+  const { event, mode } = signup
+  const formation = signup.formation ?? []
   const game = getGame(event.game)
   const blocked: string[] = event.blockedPositions ?? []
   const [slots, waitlist, loadedFonts, gameImage, logo] = await Promise.all([
@@ -86,6 +88,176 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const taken = formation.filter(
     (position) => blocked.includes(position.key) || slots.some((slot) => slot.position === position.key),
   ).length
+
+  const reservedSlots: string[] = event.reservedSlots ?? []
+  const stand = `Stand: ${formatEventDate(new Date().toISOString())}`
+  const muted = 'rgba(255,255,255,0.45)'
+
+  // Eine Zeile mit Avatar und Name, für Squads und Teilnehmerliste
+  const row = (key: string, content: React.ReactNode, variant: 'player' | 'reserved' | 'free', width: number) => (
+    <div
+      key={key}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        width,
+        height: 50,
+        padding: '0 12px',
+        borderRadius: 6,
+        fontSize: 20,
+        ...(variant === 'player'
+          ? { background: 'rgba(255,255,255,0.06)', fontWeight: 700 }
+          : variant === 'reserved'
+            ? { background: 'rgba(127,58,239,0.3)', color: 'rgba(255,255,255,0.75)' }
+            : { border: '2px dashed rgba(255,255,255,0.2)', color: muted }),
+      }}
+    >
+      {content}
+    </div>
+  )
+  const avatar = (slot: LineupSlot) =>
+    slot.discordAvatar ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={slot.discordAvatar} alt="" width={34} height={34} style={{ borderRadius: 999 }} />
+    ) : (
+      <div style={{ width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 999, background: PURPLE, fontSize: 16, fontWeight: 700 }}>
+        {slot.discordName.slice(0, 1).toUpperCase()}
+      </div>
+    )
+  const waitlistLine = waitlist.length > 0 && (
+    <div style={{ display: 'flex', marginTop: 'auto', fontSize: 20, color: 'rgba(255,255,255,0.7)' }}>
+      <span style={{ fontWeight: 700, color: '#fff', marginRight: 10 }}>Warteliste:</span>
+      {waitlist.slice(0, 8).map((entry) => entry.discordName).join(', ')}
+      {waitlist.length > 8 ? ` + ${waitlist.length - 8} weitere` : ''}
+    </div>
+  )
+  const heading = (title: string, sub: string) => (
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', fontSize: 32, fontWeight: 700 }}>{title}</div>
+        <div style={{ display: 'flex', marginTop: 4, fontSize: 20, color: 'rgba(255,255,255,0.6)' }}>{sub}</div>
+      </div>
+      <div style={{ display: 'flex', fontSize: 16, color: muted }}>{stand}</div>
+    </div>
+  )
+
+  // Battlefield: bis zu vier Squad-Karten, zwei pro Reihe
+  const squads = groupSquads(slots, reservedSlots)
+  const cardWidth = (WIDTH - 112 - 24) / 2
+  const squadsBody = (
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '28px 56px 0' }}>
+      {heading(
+        'Squads',
+        `${slots.length} Spieler in ${squads.length} ${squads.length === 1 ? 'Squad' : 'Squads'}${event.maxSquads ? ` (max. ${event.maxSquads})` : ''}`,
+      )}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
+        {squads.slice(0, 4).map((squad) => (
+          <div key={squad.number} style={{ display: 'flex', flexDirection: 'column', width: cardWidth, padding: 20, gap: 10, borderRadius: 8, background: '#111827' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ display: 'flex', fontSize: 26, fontWeight: 700 }}>Squad {squad.number}</div>
+              <div style={{ display: 'flex', fontSize: 18, fontWeight: 700, padding: '1px 8px', borderRadius: 4, ...(squad.free.length === 0 ? { background: LIME, color: '#000' } : { background: 'rgba(255,255,255,0.1)' }) }}>
+                {squad.members.length + squad.reserved.length}/{SQUAD_SIZE}
+              </div>
+            </div>
+            {squad.members.map((member, index) =>
+              row(
+                member.discordId,
+                [
+                  <div key="a" style={{ display: 'flex' }}>{avatar(member)}</div>,
+                  <div key="n" style={{ display: 'flex', flexGrow: 1 }}>{member.discordName}</div>,
+                  index === 0 ? <div key="l" style={{ display: 'flex', alignItems: 'center', height: 24, background: PURPLE, borderRadius: 4, padding: '0 8px', fontSize: 15 }}>Leader</div> : null,
+                ],
+                'player',
+                cardWidth - 40,
+              ),
+            )}
+            {squad.reserved.map((key) =>
+              row(key, [<Lock key="l" size={20} color="#fff" />, <div key="t" style={{ display: 'flex' }}>Reserviert</div>], 'reserved', cardWidth - 40),
+            )}
+            {squad.free.map((key) => row(key, <div style={{ display: 'flex' }}>Freier Platz</div>, 'free', cardWidth - 40))}
+          </div>
+        ))}
+        {squads.length === 0 && <div style={{ display: 'flex', fontSize: 22, color: muted }}>Noch kein Squad eröffnet.</div>}
+      </div>
+      {squads.length > 4 && (
+        <div style={{ display: 'flex', marginTop: 16, fontSize: 20, color: muted }}>+ {squads.length - 4} weitere Squads auf westwood-gaming.de</div>
+      )}
+      <div style={{ display: 'flex', flex: 1, paddingBottom: 8 }}>{waitlistLine}</div>
+    </div>
+  )
+
+  // Call of Duty: Teilnehmerliste in zwei Spalten; beim Custom Match nach dem Mischen Team A und B
+  const listWidth = (WIDTH - 112 - 20) / 2
+  const shown = slots.slice(0, 22)
+  const teams = mode === 'cod-custom' ? parseTeams(event.teams) : null
+  const byId = (id: string) => slots.find((slot) => slot.discordId === id)
+  const teamColumns = teams
+    ? [
+        { name: 'Team A', members: teams.a.flatMap((id) => byId(id) ?? []).slice(0, 11), accent: { background: LIME, color: '#000' } },
+        { name: 'Team B', members: teams.b.flatMap((id) => byId(id) ?? []).slice(0, 11), accent: { background: PURPLE, color: '#fff' } },
+      ]
+    : []
+  const unassigned = teams ? slots.filter((slot) => !teams.a.includes(slot.discordId) && !teams.b.includes(slot.discordId)) : []
+  const listBody = (
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '28px 56px 0' }}>
+      {heading(
+        mode === 'formation' ? '' : signupModes[mode].label,
+        event.maxPlayers
+          ? `${slots.length + reservedSlots.length} von ${event.maxPlayers} Plätzen belegt`
+          : `${slots.length} Spieler dabei`,
+      )}
+      {teams ? (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', gap: 20 }}>
+            {teamColumns.map((team) => (
+              <div key={team.name} style={{ display: 'flex', flexDirection: 'column', width: listWidth, gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', padding: '2px 12px', borderRadius: 4, fontSize: 22, fontWeight: 700, ...team.accent }}>{team.name}</div>
+                  <div style={{ display: 'flex', fontSize: 18, color: muted }}>Runde {teams.round}</div>
+                </div>
+                {team.members.map((player) =>
+                  row(player.discordId, [
+                    <div key="a" style={{ display: 'flex' }}>{avatar(player)}</div>,
+                    <div key="n" style={{ display: 'flex', flexGrow: 1 }}>{player.discordName}</div>,
+                  ], 'player', listWidth),
+                )}
+              </div>
+            ))}
+          </div>
+          {unassigned.length > 0 && (
+            <div style={{ display: 'flex', marginTop: 16, fontSize: 20, color: 'rgba(255,255,255,0.7)' }}>
+              <span style={{ fontWeight: 700, color: '#fff', marginRight: 10 }}>Noch nicht eingeteilt:</span>
+              {unassigned.slice(0, 8).map((slot) => slot.discordName).join(', ')}
+            </div>
+          )}
+        </div>
+      ) : (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 20px' }}>
+        {shown.map((player, index) =>
+          row(
+            player.discordId,
+            [
+              <div key="i" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: 28, height: 34, fontSize: 16, color: muted }}>{index + 1}.</div>,
+              <div key="a" style={{ display: 'flex' }}>{avatar(player)}</div>,
+              <div key="n" style={{ display: 'flex', flexGrow: 1 }}>{player.discordName}</div>,
+            ],
+            'player',
+            listWidth,
+          ),
+        )}
+        {reservedSlots.slice(0, Math.max(0, 24 - shown.length)).map((key) =>
+          row(key, [<Lock key="l" size={20} color="#fff" />, <div key="t" style={{ display: 'flex' }}>Reserviert</div>], 'reserved', listWidth),
+        )}
+        {slots.length === 0 && reservedSlots.length === 0 && <div style={{ display: 'flex', fontSize: 22, color: muted }}>Noch niemand dabei.</div>}
+      </div>
+      )}
+      {!teams && slots.length > shown.length && (
+        <div style={{ display: 'flex', marginTop: 14, fontSize: 20, color: muted }}>+ {slots.length - shown.length} weitere auf westwood-gaming.de</div>
+      )}
+      <div style={{ display: 'flex', flex: 1, paddingBottom: 8 }}>{waitlistLine}</div>
+    </div>
+  )
 
   const pitchWidth = 660
   const pitchHeight = 880
@@ -105,10 +277,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
             {game && <div style={{ display: 'flex', border: '1px solid #fff', borderRadius: 4, padding: '2px 10px', fontSize: 20 }}>{game.name}</div>}
           </div>
           <div style={{ display: 'flex', marginTop: 16, fontSize: 60, fontWeight: 700, lineHeight: 1.1 }}>{event.title}</div>
-          <div style={{ display: 'flex', marginTop: 12, fontSize: 30, fontWeight: 700, color: LIME }}>Anpfiff: {formatEventDate(event.date)}</div>
+          <div style={{ display: 'flex', marginTop: 12, fontSize: 30, fontWeight: 700, color: LIME }}>
+            {mode === 'formation' ? 'Anpfiff' : 'Start'}: {formatEventDate(event.date)}
+          </div>
         </div>
       </div>
 
+      {mode === 'squads' ? squadsBody : mode !== 'formation' ? listBody : (
       <div style={{ display: 'flex', flex: 1, gap: 36, padding: '24px 56px 0' }}>
         {/* Spielfeld */}
         <div style={{ position: 'relative', display: 'flex', width: pitchWidth, height: pitchHeight, background: '#111827', borderRadius: 8 }}>
@@ -236,6 +411,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
           )}
         </div>
       </div>
+
+      )}
 
       {/* Fuß */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 56px 28px' }}>

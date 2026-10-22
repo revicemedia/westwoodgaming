@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from 'next/cache'
 import { connection } from 'next/server'
 import { getPayload } from 'payload'
 import { EVENTS_TAG } from '@/collections/Events'
+import { getSignupMode, type SignupModeKey } from '@/lib/signupModes'
 
 export type GameEvent = {
   id: number
@@ -12,6 +13,8 @@ export type GameEvent = {
   description: string
   // gesetzt, wenn Spieler sich auf eine Aufstellung eintragen können
   formation: string | null
+  // Anmeldung über /events/<id>/aufstellung: Formation (EA FC) oder Anmeldetyp (Squads, Custom Match, Open Lobby)
+  signup: 'formation' | SignupModeKey | null
 }
 
 // Ohne Endzeit gilt ein Event so lange nach Beginn noch als laufend
@@ -67,5 +70,6 @@ async function getEvents(): Promise<GameEvent[]> {
       date: event.date ?? null,
       description: event.description,
       formation: event.formation ?? null,
+      signup: event.formation ? 'formation' : getSignupMode(event.game, event.signupMode),
     }))
 }

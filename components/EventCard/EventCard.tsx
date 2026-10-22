@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { formatEventDate } from '@/lib/eventDate'
 import type { GameEvent } from '@/lib/events'
 
@@ -23,6 +24,14 @@ export default function EventCard({ event, image, game }: { event: GameEvent; im
                 <p className="text-sm text-white">{formatEventDate(event.date)}</p>
             </div>
             <p className="text-sm/6 text-gray-300">{event.description}</p>
+            {event.signup && (
+              <Link
+                href={`/events/${event.id}/aufstellung`}
+                className="mt-2 w-fit rounded-md bg-lime px-3 py-1.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+              >
+                {event.signup === 'formation' ? 'Zur Aufstellung' : event.signup === 'squads' ? 'Zu den Squads' : 'Zur Anmeldung'}
+              </Link>
+            )}
         </div>
     </div>
   )
