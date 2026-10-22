@@ -137,3 +137,55 @@ body:not(:has([data-breadcrumbs])) [data-navbar] {
     }
   }
 }
+
+/* Startseite: Kacheln unter "Wir sind Westwood Gaming" ziehen beim Scrollen nacheinander herein.
+   Auf großen Bildschirmen bleibt der Bereich dabei stehen (sticky), bis alle drei da sind. */
+@keyframes feature-in {
+  from {
+    opacity: 0;
+    transform: translateY(3rem);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /* Kacheln untereinander: jede blendet ein, sobald sie ins Bild kommt */
+    .feature-tile {
+      animation: feature-in ease-out both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 35%;
+    }
+
+    @media (min-width: 1024px) {
+      /* Zusätzliche Höhe ist die Scrollstrecke, während der der Bereich stehen bleibt */
+      .features-pin {
+        min-height: 170svh;
+        view-timeline-name: --features;
+      }
+
+      /* unter der Navbar (6rem) vertikal mittig angeheftet */
+      .features-sticky {
+        position: sticky;
+        top: 6rem;
+        display: flex;
+        min-height: calc(100svh - 6rem);
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      /* contain 0 % = Bereich erreicht die Navbar, 100 % = er löst sich wieder; versetzt nacheinander */
+      .feature-tile {
+        animation-timeline: --features;
+      }
+      .feature-tile:nth-child(1) {
+        animation-range: contain 0% contain 25%;
+      }
+      .feature-tile:nth-child(2) {
+        animation-range: contain 15% contain 40%;
+      }
+      .feature-tile:nth-child(3) {
+        animation-range: contain 30% contain 55%;
+      }
+    }
+  }
+}

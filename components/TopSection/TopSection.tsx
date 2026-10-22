@@ -30,8 +30,9 @@ const features = [
 
 export default function TopSection() {
   return (
-    <div className="bg-white">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    // features-pin/-sticky/-tile: Scroll-Animation in globals.css
+    <div className="features-pin bg-white">
+      <div className="features-sticky mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:mx-0">
           <h2 className="text-pretty text-3xl font-semibold text-gray-900">
             Wir sind Westwood Gaming
@@ -43,7 +44,7 @@ export default function TopSection() {
         <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
           <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
             {features.map((feature) => (
-              <div key={feature.name} className="flex flex-col">
+              <div key={feature.name} className="feature-tile flex flex-col">
                 <dt className="text-base/7 font-semibold text-gray-900">
                   <div className={`mb-6 flex size-10 items-center justify-center rounded-md ${feature.tile}`}>
                     <feature.icon aria-hidden="true" className="size-6" />
