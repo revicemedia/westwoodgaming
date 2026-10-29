@@ -80,8 +80,7 @@ async function ArticleContent({ params }: Props) {
 
       <div className="w-full bg-white pt-12 pb-20">
         <article className="mx-auto w-full max-w-7xl px-6 lg:px-8">
-          <p className="max-w-3xl text-lg/8 text-black">{article.preview}</p>
-          <NewsContent data={article.content as SerializedEditorState} className="news-content mt-8 max-w-3xl" />
+          <NewsContent data={article.content as SerializedEditorState} className="news-content max-w-3xl" />
         </article>
       </div>
     </>
