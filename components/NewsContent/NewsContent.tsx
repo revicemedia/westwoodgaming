@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { RichText, type JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
+import { parseEmbed } from '@/lib/embeds'
 import type { Media } from '@/payload-types'
 
 // Bilder im Artikeltext laufen über next/image statt über das rohe <img> von Payload
@@ -28,6 +29,25 @@ const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
         )}
       </figure>
     )
+  },
+  blocks: {
+    embed: ({ node }: { node: { fields: { code?: string } } }) => {
+      const embed = parseEmbed(node.fields.code ?? '')
+      if (!embed) return null
+
+      return (
+        <iframe
+          src={embed.src}
+          title={embed.title}
+          height={embed.height}
+          loading="lazy"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
+          className={`my-8 w-full rounded-xl border-0 ${embed.height ? '' : 'aspect-video'}`}
+        />
+      )
+    },
   },
 })
 

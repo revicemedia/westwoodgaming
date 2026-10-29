@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import {
   BlockquoteFeature,
+  BlocksFeature,
   BoldFeature,
   FixedToolbarFeature,
   HeadingFeature,
@@ -27,6 +28,7 @@ import { LineupSlots } from './collections/LineupSlots'
 import { LineupWaitlist } from './collections/LineupWaitlist'
 import { Media } from './collections/Media'
 import { News } from './collections/News'
+import { parseEmbed } from './lib/embeds'
 import { Users } from './collections/Users'
 import { migrations } from './migrations'
 
@@ -59,6 +61,28 @@ export default buildConfig({
       LinkFeature({ enabledCollections: [] }),
       // Bilder im Fließtext, aus der Mediathek oder direkt hochgeladen
       UploadFeature({ enabledCollections: ['media'] }),
+      // Spotify- oder YouTube-Player; angezeigt wird nur ein selbst gebauter iframe
+      BlocksFeature({
+        blocks: [
+          {
+            slug: 'embed',
+            labels: { singular: 'Einbettung', plural: 'Einbettungen' },
+            fields: [
+              {
+                name: 'code',
+                label: 'Link oder Einbettungscode',
+                type: 'textarea',
+                required: true,
+                admin: {
+                  description: 'Spotify- oder YouTube-Link, alternativ den kompletten <iframe>-Code aus „Teilen → Einbetten“.',
+                },
+                validate: (value: string | null | undefined) =>
+                  value && parseEmbed(value) ? true : 'Bitte einen Spotify- oder YouTube-Link einfügen.',
+              },
+            ],
+          },
+        ],
+      }),
       FixedToolbarFeature(),
       InlineToolbarFeature(),
     ],
