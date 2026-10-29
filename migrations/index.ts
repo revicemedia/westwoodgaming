@@ -8,6 +8,7 @@ import * as migration_20261021_084141_waitlist_and_blocked_positions from './202
 import * as migration_20261022_222101_signup_mode from './20261022_222101_signup_mode';
 import * as migration_20261022_223701_signup_capacity_and_reservations from './20261022_223701_signup_capacity_and_reservations';
 import * as migration_20261022_224131_custom_teams from './20261022_224131_custom_teams';
+import * as migration_20261029_115354_media_source from './20261029_115354_media_source';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20261022_224131_custom_teams.up,
     down: migration_20261022_224131_custom_teams.down,
-    name: '20261022_224131_custom_teams'
+    name: '20261022_224131_custom_teams',
+  },
+  {
+    up: migration_20261029_115354_media_source.up,
+    down: migration_20261029_115354_media_source.down,
+    name: '20261029_115354_media_source'
   },
 ];

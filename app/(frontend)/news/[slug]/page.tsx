@@ -3,9 +3,9 @@ import Image from "next/image";
 import Breadcrumbs from "@/components/Breadcrumbs/Breadcrumbs";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { RichText } from "@payloadcms/richtext-lexical/react";
 import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 import { getNews, getNewsArticle } from "@/lib/news";
+import NewsContent from "@/components/NewsContent/NewsContent";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -81,7 +81,7 @@ async function ArticleContent({ params }: Props) {
       <div className="w-full bg-white pt-12 pb-20">
         <article className="mx-auto w-full max-w-7xl px-6 lg:px-8">
           <p className="max-w-3xl text-lg/8 text-black">{article.preview}</p>
-          <RichText data={article.content as SerializedEditorState} className="news-content mt-8 max-w-3xl" />
+          <NewsContent data={article.content as SerializedEditorState} className="news-content mt-8 max-w-3xl" />
         </article>
       </div>
     </>

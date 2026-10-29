@@ -296,6 +296,10 @@ export interface Media {
    * Kurze Beschreibung des Bildes für Screenreader.
    */
   alt?: string | null;
+  /**
+   * Fotograf, Publisher oder Website, z. B. „EA Sports“. Steht unter dem Bild im Artikel.
+   */
+  source?: string | null;
   prefix?: string | null;
   _objectKey?: string | null;
   updatedAt: string;
@@ -495,6 +499,7 @@ export interface NewsSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  source?: T;
   prefix?: T;
   _objectKey?: T;
   updatedAt?: T;

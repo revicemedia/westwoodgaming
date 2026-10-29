@@ -15,6 +15,7 @@ import {
   StrikethroughFeature,
   UnderlineFeature,
   UnorderedListFeature,
+  UploadFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
@@ -56,6 +57,8 @@ export default buildConfig({
       HorizontalRuleFeature(),
       // nur externe Links, keine Verweise auf Admin-Einträge
       LinkFeature({ enabledCollections: [] }),
+      // Bilder im Fließtext, aus der Mediathek oder direkt hochgeladen
+      UploadFeature({ enabledCollections: ['media'] }),
       FixedToolbarFeature(),
       InlineToolbarFeature(),
     ],

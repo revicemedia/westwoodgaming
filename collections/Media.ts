@@ -21,5 +21,13 @@ export const Media: CollectionConfig = {
         description: 'Kurze Beschreibung des Bildes für Screenreader.',
       },
     },
+    {
+      name: 'source',
+      label: 'Bildquelle',
+      type: 'text',
+      admin: {
+        description: 'Fotograf, Publisher oder Website, z. B. „EA Sports“. Steht unter dem Bild im Artikel.',
+      },
+    },
   ],
 }
